@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Secrets & Environment Variables
+.env
+.env.local
+.env.*.local
+*.pem
+credentials.json
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Obsidian User Workspace (keep note content, ignore personal window layouts)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# OS Specific
+.DS_Store
+Thumbs.db
