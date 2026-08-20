@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 199 89% 48%;
+
+    --radius: 1rem;
+
+    /* Custom Nordic Slate tokens */
+    --bg-space: #070c16;
+    --bg-card: rgba(14, 23, 39, 0.75);
+    --bg-card-hover: rgba(20, 32, 54, 0.88);
+    --bg-card-border: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Base Body */
+body {
+  background-color: var(--bg-space);
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Hide scrollbars utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Atmospheric Layered Background */
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background-color: var(--bg-space);
+}
+
+.aurora-bg::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: 25%;
+  width: 65vw;
+  height: 60vh;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(20, 184, 166, 0.18) 0%,
+    rgba(6, 182, 212, 0.12) 35%,
+    rgba(14, 165, 233, 0.06) 60%,
+    transparent 80%
+  );
+  filter: blur(85px);
+  transform: translateZ(0);
+}
+
+.aurora-bg::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  right: -5%;
+  width: 45vw;
+  height: 50vh;
+  background: radial-gradient(
+    circle,
+    rgba(16, 185, 129, 0.14) 0%,
+    rgba(20, 184, 166, 0.08) 45%,
+    transparent 75%
+  );
+  filter: blur(90px);
+  transform: translateZ(0);
+}
+
+.aurora-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(7, 12, 22, 0.55) 75%,
+    rgba(7, 12, 22, 0.96) 100%
+  );
+}
+
+.aurora-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.025;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 0);
+  background-size: 24px 24px;
+}
