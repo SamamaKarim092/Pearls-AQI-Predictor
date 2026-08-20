@@ -1,0 +1,229 @@
+import React, { useState } from 'react';
+import { HelpCircle, Activity, Info, X } from 'lucide-react';
+
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+
+// GitHub-Style AQI Heatmap Intensity Levels (Soft, Elegant, Less-Saturated Nordic Palette)
+const INTENSITY_COLORS = [
+  { bg: 'bg-sky-500/50', border: 'border-sky-400/30', text: 'Clean Air (AQI < 50)', label: 'Level 0' }, // Soft Sky Blue
+  { bg: 'bg-teal-500/55', border: 'border-teal-400/30', text: 'Moderate (AQI 51-80)', label: 'Level 1' }, // Soft Teal Cyan
+  { bg: 'bg-amber-500/65', border: 'border-amber-400/30', text: 'Elevated (AQI 81-110)', label: 'Level 2' }, // Soft Warm Amber
+  { bg: 'bg-rose-500/75', border: 'border-rose-400/30', text: 'Unhealthy (AQI 111-150)', label: 'Level 3' }, // Soft Rose Coral
+  { bg: 'bg-red-500/85', border: 'border-red-400/30', text: 'Hazardous (AQI 150+)', label: 'Level 4' }, // Soft Crimson
+];
+
+function getAqiForCell(dayIdx, hour) {
+  // Rush hours: 7 AM - 10 AM (hour 7-10) & 5 PM - 8 PM (hour 17-20)
+  const isMorningRush = hour >= 7 && hour <= 10;
+  const isEveningRush = hour >= 17 && hour <= 20;
+  const isLateNight = hour <= 5 || hour >= 22;
+
+  let baseAqi = 45;
+
+  if (isMorningRush) {
+    baseAqi = dayIdx < 5 ? 135 + (dayIdx % 3) * 10 : 75;
+  } else if (isEveningRush) {
+    baseAqi = dayIdx < 5 ? 145 + (dayIdx % 2) * 12 : 85;
+  } else if (isLateNight) {
+    baseAqi = 28 + (hour % 4) * 3;
+  } else {
+    // Afternoon
+    baseAqi = dayIdx < 5 ? 70 + (hour % 5) * 4 : 50;
+  }
+
+  return baseAqi;
+}
+
+function getIntensityLevel(aqi) {
+  if (aqi <= 50) return 0;
+  if (aqi <= 80) return 1;
+  if (aqi <= 110) return 2;
+  if (aqi <= 150) return 3;
+  return 4;
+}
+
+function getCellColorClass(aqi) {
+  const level = getIntensityLevel(aqi);
+  return INTENSITY_COLORS[level].bg;
+}
+
+function formatHour(h) {
+  if (h === 0) return '12 AM';
+  if (h === 12) return '12 PM';
+  return h > 12 ? `${h - 12} PM` : `${h} AM`;
+}
+
+function getPeriodDescription(hour) {
+  if (hour >= 7 && hour <= 10) return 'Morning Rush';
+  if (hour >= 17 && hour <= 20) return 'Evening Rush';
+  if (hour <= 5 || hour >= 22) return 'Night Calm';
+  return 'Regular Air';
+}
+
+export default function DiurnalGithubHeatmap() {
+  const [hoveredCell, setHoveredCell] = useState(null);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+
+  return (
+    <div className="flex flex-col justify-between w-full h-full min-h-[290px] rounded-2xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-md shadow-xl select-none overflow-hidden">
+      {/* Top Header + GitHub-style Legend */}
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="flex items-center gap-2">
+          <Activity size={16} className="text-emerald-400" />
+          <h3 className="text-sm font-semibold text-white tracking-wide">
+            24-Hour Diurnal Rush-Hour Heatmap
+          </h3>
+          <button
+            onClick={() => setShowInfoModal(true)}
+            className="text-slate-400 hover:text-sky-300 transition-colors p-0.5 cursor-pointer"
+            title="How to read this GitHub-style atmospheric heatmap"
+          >
+            <HelpCircle size={14} />
+          </button>
+        </div>
+
+        {/* GitHub-style Clean <-> Smog Legend */}
+        <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-300">
+          <span className="text-[10px] text-sky-300 font-medium">Clean</span>
+          <div className="flex items-center gap-1">
+            {INTENSITY_COLORS.map((item, idx) => (
+              <span
+                key={idx}
+                className={`w-3 h-3 rounded-[3px] border border-white/10 shadow-sm ${item.bg}`}
+                title={item.text}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] text-rose-300 font-medium">Smog</span>
+        </div>
+      </div>
+
+      {/* GitHub 7-Row (Days) x 24-Column (Hours) Grid Container without scrollbar leaks */}
+      <div className="pt-3 overflow-x-auto no-scrollbar p-1">
+        <div className="min-w-[420px]">
+          {/* Top X-Axis 4 Time Milestone Headers aligned to exact start hours */}
+          <div className="grid grid-cols-[38px_repeat(24,1fr)] gap-[3px] text-[10px] font-mono text-slate-400 pb-1.5 select-none">
+            <span /> {/* Left 38px Y-axis spacer */}
+            <span className="col-start-2 col-span-6 text-left">12 AM (Night)</span>
+            <span className="col-start-8 col-span-6 text-left">6 AM (Morning)</span>
+            <span className="col-start-14 col-span-6 text-left">12 PM (Noon)</span>
+            <span className="col-start-20 col-span-5 text-left">6 PM (Evening)</span>
+          </div>
+
+          {/* 7 Day Rows */}
+          <div className="space-y-[3.5px]">
+            {DAYS.map((dayName, dayIdx) => (
+              <div key={dayName} className="grid grid-cols-[38px_repeat(24,1fr)] gap-[3px] items-center">
+                {/* Left Y-Axis Day Label */}
+                <span className="text-[11px] font-mono text-slate-400 text-left font-medium">
+                  {dayName}
+                </span>
+
+                {/* 24 Hour Activity Squares for this Day */}
+                {HOURS.map((hour) => {
+                  const aqi = getAqiForCell(dayIdx, hour);
+                  const colorClass = getCellColorClass(aqi);
+                  // Anchor transform origin to keep scaling inside container
+                  const originClass = hour === 23 ? 'origin-right' : hour === 0 ? 'origin-left' : 'origin-center';
+
+                  return (
+                    <div
+                      key={hour}
+                      onMouseEnter={() =>
+                        setHoveredCell({
+                          day: dayName,
+                          hour: hour,
+                          aqi: aqi,
+                          formattedHour: formatHour(hour),
+                          period: getPeriodDescription(hour),
+                        })
+                      }
+                      onMouseLeave={() => setHoveredCell(null)}
+                      className={`h-4 sm:h-4.5 rounded-[3px] border border-white/10 transition-all duration-150 cursor-pointer shadow-sm ${colorClass} ${originClass} hover:scale-115 hover:z-20 hover:ring-2 hover:ring-white hover:brightness-125`}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Interactive Readout Ribbon */}
+      <div className="mt-3 flex items-center justify-between pt-2.5 border-t border-white/5 text-[11px] font-mono">
+        {hoveredCell ? (
+          <div className="flex items-center gap-2 text-slate-200">
+            <span className="font-semibold text-white">
+              {hoveredCell.day} @ {hoveredCell.formattedHour}
+            </span>
+            <span className="text-slate-400">&bull;</span>
+            <span className="text-slate-300">{hoveredCell.period}</span>
+            <span className="text-slate-400">&bull;</span>
+            <span
+              className={`px-2 py-0.2 rounded-full font-bold text-xs ${
+                hoveredCell.aqi <= 50
+                  ? 'text-sky-200 bg-sky-500/25 border border-sky-400/40'
+                  : hoveredCell.aqi <= 100
+                  ? 'text-amber-200 bg-amber-500/25 border border-amber-400/40'
+                  : 'text-rose-200 bg-rose-500/30 border border-rose-400/40'
+              }`}
+            >
+              AQI {hoveredCell.aqi}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between w-full text-slate-400">
+            <span>Hover cell for hourly data</span>
+            <span className="text-rose-300 font-medium">Peak: 8–10 AM & 5–8 PM</span>
+          </div>
+        )}
+      </div>
+
+      {/* Info Guide Modal */}
+      {showInfoModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md p-4"
+          onClick={() => setShowInfoModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-white/15 bg-slate-900/95 p-6 shadow-2xl backdrop-blur-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                <Info size={17} className="text-emerald-400" />
+                How to Read the GitHub-Style Heatmap
+              </h3>
+              <button
+                onClick={() => setShowInfoModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3 pt-3 text-xs text-slate-300 leading-relaxed">
+              <p>
+                Inspired by <b>GitHub's Contribution Activity Graph</b>, this matrix maps all <b>168 hours of the week (7 Days × 24 Hours)</b>:
+              </p>
+              <div className="space-y-2 rounded-xl bg-slate-800/80 border border-white/5 p-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-[3px] bg-sky-500/50 border border-white/15 flex-shrink-0" />
+                  <span><b>Soft Sky Blue (Night 12 AM–5 AM)</b>: Cleanest air baseline with minimal traffic.</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-[3px] bg-rose-500/75 border border-white/15 flex-shrink-0" />
+                  <span><b>Rose / Coral (8–10 AM & 5–8 PM)</b>: Heavy commuter traffic smog peaks.</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Use this tracker to schedule workouts, jogs, or school commutes during clean blue hours!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
