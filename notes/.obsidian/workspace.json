@@ -41,7 +41,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -183,8 +185,9 @@
       "bases:Create new base": false
     }
   },
-  "active": "f2985b654947ad9a",
+  "active": "416a76d6bb389905",
   "lastOpenFiles": [
+    "01-architecture/04-FastAPI-Bridge-and-React-Decoupling.md",
     "03-machine-learning/02-Why-Time-Series-Needs-Chronological-Splits.md",
     "03-machine-learning/03-Cross-Validation-in-Time-Series.md",
     "01-architecture/01-Project-Overview-and-Serverless-Stack.md",
