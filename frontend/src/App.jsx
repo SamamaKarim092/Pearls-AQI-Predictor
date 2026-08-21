@@ -1,79 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Menu, Sparkles, RefreshCw, Activity, TrendingUp } from 'lucide-react';
-import Aurora from '@/components/Aurora';
-import ConcentricRings from '@/components/ConcentricRings';
-import CigaretteCard from '@/components/CigaretteCard';
-import LifestyleGrid from '@/components/LifestyleGrid';
-import TimeTravelScrubber from '@/components/TimeTravelScrubber';
-import PollutantBars from '@/components/PollutantBars';
-import TrendsDashboard from '@/components/TrendsDashboard';
+import ConcentricRings from './components/ConcentricRings';
+import CigaretteCard from './components/CigaretteCard';
+import LifestyleGrid from './components/LifestyleGrid';
+import TimeTravelScrubber from './components/TimeTravelScrubber';
+import PollutantBars from './components/PollutantBars';
+import TrendsDashboard from './components/TrendsDashboard';
+import ShapLab from './components/ShapLab';
+import Aurora from './components/Aurora';
+import {
+  Bell,
+  Menu,
+  Activity,
+  TrendingUp,
+  Sliders,
+  ChevronDown,
+  Sparkles,
+} from 'lucide-react';
 
 const CITIES = ['Karachi', 'Lahore', 'Islamabad'];
 
-// Realistic City Baseline Profiles (Used for seamless initial render)
+// Static baseline fallback for initial render or offline mode
 const CITY_BASELINES = {
   Karachi: {
-    aqi: 63,
+    city: 'Karachi',
+    aqi: 52,
     category: 'Moderate',
-    color: '#FFFF00',
-    pm2_5: 16.8,
-    pm10: 34.0,
-    nitrogen_dioxide: 3.4,
-    sulphur_dioxide: 4.7,
-    ozone: 64.0,
-    temperature_2m: 30.5,
-    wind_speed_10m: 19.1,
-    relative_humidity_2m: 63.0,
-    cigarettes_per_day: 0.8,
-    time_display: 'Live (Now)',
-    lifestyle_actions: {
-      cardio: { status: 'Moderate Caution' },
-      windows: { status: 'Open Windows' },
-      asthma: { status: 'Asthmatic Alert' },
-      mask: { status: 'Mask Advisory' },
-    },
+    color: '#fbbf24',
+    pm2_5: 14.5,
+    pm10: 38.0,
+    nitrogen_dioxide: 12.0,
+    sulphur_dioxide: 6.5,
+    ozone: 18.0,
+    temperature_2m: 29.5,
+    wind_speed_10m: 16.2,
+    relative_humidity_2m: 72.0,
+    cigarettes_per_day: 0.7,
+    lifestyle_actions: [
+      { id: 'mask', label: 'Wear N95 Mask', active: false, icon: 'mask' },
+      { id: 'air_purifier', label: 'Air Purifier ON', active: false, icon: 'air_purifier' },
+      { id: 'exercise', label: 'Outdoor Exercise OK', active: true, icon: 'exercise' },
+      { id: 'windows', label: 'Open Windows OK', active: true, icon: 'windows' },
+    ],
   },
   Lahore: {
+    city: 'Lahore',
     aqi: 142,
     category: 'Unhealthy',
     color: '#ef4444',
-    pm2_5: 50.8,
-    pm10: 109.2,
-    nitrogen_dioxide: 6.2,
-    sulphur_dioxide: 12.7,
-    ozone: 175.0,
-    temperature_2m: 33.0,
-    wind_speed_10m: 7.5,
-    relative_humidity_2m: 70.0,
-    cigarettes_per_day: 2.3,
-    time_display: 'Live (Now)',
-    lifestyle_actions: {
-      cardio: { status: 'Limit Cardio' },
-      windows: { status: 'Keep Closed' },
-      asthma: { status: 'Inhaler Alert' },
-      mask: { status: 'Mask Advisory' },
-    },
+    pm2_5: 52.0,
+    pm10: 110.0,
+    nitrogen_dioxide: 28.0,
+    sulphur_dioxide: 14.0,
+    ozone: 24.0,
+    temperature_2m: 31.0,
+    wind_speed_10m: 6.5,
+    relative_humidity_2m: 55.0,
+    cigarettes_per_day: 2.4,
+    lifestyle_actions: [
+      { id: 'mask', label: 'Wear N95 Mask', active: true, icon: 'mask' },
+      { id: 'air_purifier', label: 'Air Purifier ON', active: true, icon: 'air_purifier' },
+      { id: 'exercise', label: 'Avoid Heavy Exercise', active: true, icon: 'exercise' },
+      { id: 'windows', label: 'Keep Windows Closed', active: true, icon: 'windows' },
+    ],
   },
   Islamabad: {
-    aqi: 136,
-    category: 'Unhealthy',
-    color: '#ef4444',
-    pm2_5: 42.8,
-    pm10: 71.0,
-    nitrogen_dioxide: 37.6,
-    sulphur_dioxide: 8.5,
-    ozone: 48.0,
-    temperature_2m: 30.6,
-    wind_speed_10m: 8.2,
-    relative_humidity_2m: 65.0,
-    cigarettes_per_day: 1.9,
-    time_display: 'Live (Now)',
-    lifestyle_actions: {
-      cardio: { status: 'Limit Cardio' },
-      windows: { status: 'Keep Closed' },
-      asthma: { status: 'Inhaler Alert' },
-      mask: { status: 'Mask Advisory' },
-    },
+    city: 'Islamabad',
+    aqi: 98,
+    category: 'Moderate',
+    color: '#fbbf24',
+    pm2_5: 25.0,
+    pm10: 62.0,
+    nitrogen_dioxide: 15.0,
+    sulphur_dioxide: 8.0,
+    ozone: 20.0,
+    temperature_2m: 26.0,
+    wind_speed_10m: 11.0,
+    relative_humidity_2m: 60.0,
+    cigarettes_per_day: 1.1,
+    lifestyle_actions: [
+      { id: 'mask', label: 'Wear N95 Mask', active: false, icon: 'mask' },
+      { id: 'air_purifier', label: 'Air Purifier ON', active: false, icon: 'air_purifier' },
+      { id: 'exercise', label: 'Outdoor Exercise OK', active: true, icon: 'exercise' },
+      { id: 'windows', label: 'Open Windows OK', active: true, icon: 'windows' },
+    ],
   },
 };
 
@@ -81,12 +90,22 @@ function generateFallbackTimeline(city) {
   const base = CITY_BASELINES[city] || CITY_BASELINES.Karachi;
   return Array.from({ length: 49 }, (_, i) => {
     const hours = i - 24;
-    const wave = Math.sin(i / 4) * (base.pm2_5 * 0.18);
-    const pm25 = parseFloat(Math.max(4.0, base.pm2_5 + wave + (hours > 0 ? hours * 0.08 : 0)).toFixed(1));
-    const aqi = Math.round(pm25 <= 12 ? (50 / 12) * pm25 : 50 + ((100 - 50) / (35.4 - 12.1)) * (pm25 - 12.1));
-    const cat = aqi <= 50 ? 'Good Air' : aqi <= 100 ? 'Moderate' : 'Unhealthy';
-    const color = aqi <= 50 ? '#10b981' : aqi <= 100 ? '#fbbf24' : '#ef4444';
-
+    const pm25 = parseFloat(
+      Math.max(5, base.pm2_5 + Math.sin(i / 3) * 6 + (hours > 0 ? hours * 0.2 : 0)).toFixed(1)
+    );
+    const aqi = Math.round(pm25 * 3.4);
+    let cat = 'Good';
+    let color = '#10b981';
+    if (aqi > 150) {
+      cat = 'Unhealthy';
+      color = '#ef4444';
+    } else if (aqi > 100) {
+      cat = 'Unhealthy';
+      color = '#f97316';
+    } else if (aqi > 50) {
+      cat = 'Moderate';
+      color = '#fbbf24';
+    }
     return {
       hour_offset: hours,
       time_display: hours === 0 ? 'Live (Now)' : `${hours > 0 ? '+' : ''}${hours}h`,
@@ -109,7 +128,7 @@ function generateFallbackTimeline(city) {
 }
 
 export default function App() {
-  const [activePage, setActivePage] = useState('live'); // 'live' | 'trends'
+  const [activePage, setActivePage] = useState('live'); // 'live' | 'trends' | 'shap'
   const [selectedCity, setSelectedCity] = useState('Karachi');
   const [loading, setLoading] = useState(false);
   const [scrubberIndex, setScrubberIndex] = useState(24);
@@ -199,7 +218,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* Center Page Switcher Navigation Tabs */}
+          {/* Center 3-Page Switcher Navigation Tabs */}
           <div className="flex items-center bg-slate-900/80 p-1 rounded-xl border border-white/10 backdrop-blur-md shadow-lg">
             <button
               onClick={() => setActivePage('live')}
@@ -212,6 +231,7 @@ export default function App() {
               <Activity size={13} />
               <span>Live Monitor</span>
             </button>
+
             <button
               onClick={() => setActivePage('trends')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
@@ -223,32 +243,37 @@ export default function App() {
               <TrendingUp size={13} />
               <span>3-Day & 7-Day Trends</span>
             </button>
+
+            <button
+              onClick={() => setActivePage('shap')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                activePage === 'shap'
+                  ? 'bg-sky-500/25 text-sky-300 border border-sky-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Sliders size={13} />
+              <span>What-If Simulator</span>
+            </button>
           </div>
 
           {/* Right City Selector Pill Tabs & Action Buttons */}
           <div className="flex items-center gap-2.5">
             <div className="flex items-center bg-slate-900/60 p-1 rounded-xl border border-white/10 backdrop-blur-md">
-              {CITIES.map((city) => (
+              {CITIES.map((c) => (
                 <button
-                  key={city}
-                  onClick={() => setSelectedCity(city)}
+                  key={c}
+                  onClick={() => setSelectedCity(c)}
                   className={`px-3 py-1 text-xs font-medium rounded-lg transition-all cursor-pointer ${
-                    selectedCity === city
-                      ? 'bg-sky-500/25 text-sky-300 border border-sky-500/40 shadow-sm font-semibold'
-                      : 'text-slate-400 hover:text-white'
+                    selectedCity === c
+                      ? 'bg-sky-500/30 text-sky-300 font-semibold shadow-sm border border-sky-500/40'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  {city}
+                  {c}
                 </button>
               ))}
             </div>
-
-            {/* Refresh / Loading Indicator */}
-            {loading && (
-              <div className="flex items-center text-xs text-sky-300 animate-spin">
-                <RefreshCw size={15} />
-              </div>
-            )}
 
             {/* Right Action Buttons */}
             <button
@@ -319,10 +344,15 @@ export default function App() {
                 </div>
               </div>
             </div>
-          ) : (
+          ) : activePage === 'trends' ? (
             /* ==================== PAGE 2: 7-DAY & 3-DAY TREND INTELLIGENCE ==================== */
             <div>
               <TrendsDashboard selectedCity={selectedCity} />
+            </div>
+          ) : (
+            /* ==================== PAGE 3: SHAP WHAT-IF LAB & EXPLAINABILITY SIMULATOR ==================== */
+            <div>
+              <ShapLab selectedCity={selectedCity} />
             </div>
           )}
         </main>
