@@ -1,4 +1,12 @@
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Wind,
+  Droplets,
+  Thermometer,
+  CloudRain,
+  RotateCcw,
+  Sparkles,
+} from 'lucide-react';
 
 // Preset scenarios matching exact mockup
 const SCENARIO_PRESETS = [
@@ -19,45 +27,159 @@ const SCENARIO_PRESETS = [
   },
 ];
 
-// Helper to calculate category info from AQI
+// Exact percentage calculation for seamless gradient fill to thumb position
+const getSliderPercent = (val, min, max) =>
+  Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+
+// Helper to calculate category info matching exact design label & color
 function getCategoryInfo(aqi) {
   if (aqi <= 50) return { label: 'Good', color: '#10b981' };
   if (aqi <= 100) return { label: 'Moderate', color: '#fbbf24' };
-  if (aqi <= 150) return { label: 'Unhealthy for Sensitive', color: '#f97316' };
-  if (aqi <= 200) return { label: 'Unhealthy', color: '#ef4444' };
-  if (aqi <= 300) return { label: 'Very Unhealthy', color: '#a855f7' };
-  return { label: 'Hazardous', color: '#881337' };
+  return { label: 'Unhealthy', color: '#f87171' };
 }
 
-export default function ShapLab({ selectedCity = 'Karachi' }) {
-  // 4 Core Slider Parameters matching exact mockup
-  const [windSpeed, setWindSpeed] = useState(12);
-  const [humidity, setHumidity] = useState(78);
-  const [temperature, setTemperature] = useState(31);
+// Calculate realistic gauge needle angle (pointing to right red zone on elevated AQI)
+function calculateNeedleAngle(aqi) {
+  const clamped = Math.max(0, Math.min(300, aqi));
+  if (clamped <= 50) {
+    // 0 to 50 AQI -> -180 deg to -135 deg (Green)
+    return -180 + (clamped / 50) * 45;
+  } else if (clamped <= 100) {
+    // 51 to 100 AQI -> -135 deg to -90 deg (Yellow/Moderate)
+    return -135 + ((clamped - 50) / 50) * 45;
+  } else if (clamped <= 170) {
+    // 101 to 170 AQI -> -90 deg to -35 deg (Red/Unhealthy - for 138 AQI this gives ~-42 deg)
+    return -90 + ((clamped - 100) / 70) * 55;
+  } else {
+    // 171 to 300 AQI -> -35 deg to 0 deg (Deep Red)
+    return -35 + ((clamped - 170) / 130) * 35;
+  }
+}
+
+export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }) {
+  // Derive initial values from live data or city-specific baseline
+  const getCityDefaults = (city, live) => {
+    if (live && live.aqi !== undefined) {
+      return {
+        aqi: Math.round(live.aqi),
+        wind: Math.round(live.wind_speed_10m ?? 14),
+        hum: Math.round(live.relative_humidity_2m ?? 65),
+        temp: Math.round(live.temperature_2m ?? 29),
+      };
+    }
+    if (city === 'Lahore') return { aqi: 151, wind: 3, hum: 56, temp: 35 };
+    if (city === 'Islamabad') return { aqi: 124, wind: 4, hum: 58, temp: 32 };
+    return { aqi: 68, wind: 19, hum: 71, temp: 30 };
+  };
+
+  const initialValues = getCityDefaults(selectedCity, currentLive);
+
+  // 4 Core Slider Parameters matching exact live sensor conditions
+  const [windSpeed, setWindSpeed] = useState(initialValues.wind);
+  const [humidity, setHumidity] = useState(initialValues.hum);
+  const [temperature, setTemperature] = useState(initialValues.temp);
   const [precipitation, setPrecipitation] = useState(0);
 
-  const [activeScenario, setActiveScenario] = useState('rainwash');
-  const [simulatedAqi, setSimulatedAqi] = useState(138);
-  const [baselineAqi, setBaselineAqi] = useState(62);
-  const [shapFactors, setShapFactors] = useState([]);
+  const [activeScenario, setActiveScenario] = useState(null);
+  const [simulatedAqi, setSimulatedAqi] = useState(initialValues.aqi);
+  const [baselineAqi, setBaselineAqi] = useState(initialValues.aqi);
+  const [shapFactors, setShapFactors] = useState([
+    { name: 'Wind Dispersion', impact: 0.0, desc: `At live baseline (${initialValues.wind} km/h)`, isPositive: false },
+    { name: 'Humidity', impact: 0.0, desc: `At live baseline (${initialValues.hum}%)`, isPositive: false },
+    { name: 'Temperature', impact: 0.0, desc: `At live baseline (${initialValues.temp}°C)`, isPositive: false },
+  ]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Fetch live baseline when city changes
+  // Store the live baseline weather references to accurately detect default state
+  const baselineWeatherRef = useRef({
+    wind: initialValues.wind,
+    hum: initialValues.hum,
+    temp: initialValues.temp,
+    precip: 0,
+  });
+
+  // 1. On Mount or City Change / live data update: Fetch & Sync Today's Live Sensor Conditions
   useEffect(() => {
+    let isCancelled = false;
+
+    const syncLiveValues = (liveAqi, liveWind, liveHumidity, liveTemp) => {
+      baselineWeatherRef.current = {
+        wind: liveWind,
+        hum: liveHumidity,
+        temp: liveTemp,
+        precip: 0,
+      };
+
+      setBaselineAqi(liveAqi);
+      setSimulatedAqi(liveAqi);
+      setWindSpeed(liveWind);
+      setHumidity(liveHumidity);
+      setTemperature(liveTemp);
+      setPrecipitation(0);
+      setActiveScenario(null);
+
+      setShapFactors([
+        { name: 'Wind Dispersion', impact: 0.0, desc: `At live baseline (${liveWind} km/h)`, isPositive: false },
+        { name: 'Humidity', impact: 0.0, desc: `At live baseline (${liveHumidity}%)`, isPositive: false },
+        { name: 'Temperature', impact: 0.0, desc: `At live baseline (${liveTemp}°C)`, isPositive: false },
+      ]);
+    };
+
+    if (currentLive && currentLive.aqi !== undefined) {
+      const liveAqi = Math.round(currentLive.aqi);
+      const liveWind = Math.round(currentLive.wind_speed_10m ?? initialValues.wind);
+      const liveHumidity = Math.round(currentLive.relative_humidity_2m ?? initialValues.hum);
+      const liveTemp = Math.round(currentLive.temperature_2m ?? initialValues.temp);
+      syncLiveValues(liveAqi, liveWind, liveHumidity, liveTemp);
+    }
+
     fetch(`http://localhost:8000/api/forecast?city=${selectedCity}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data && data.current && data.current.aqi) {
-          setBaselineAqi(Math.round(data.current.aqi));
+        if (!isCancelled && data && data.current) {
+          const liveAqi = Math.round(data.current.aqi ?? initialValues.aqi);
+          const liveWind = Math.round(data.current.wind_speed_10m ?? initialValues.wind);
+          const liveHumidity = Math.round(data.current.relative_humidity_2m ?? initialValues.hum);
+          const liveTemp = Math.round(data.current.temperature_2m ?? initialValues.temp);
+          syncLiveValues(liveAqi, liveWind, liveHumidity, liveTemp);
         }
       })
       .catch(() => {
-        setBaselineAqi(selectedCity === 'Karachi' ? 62 : selectedCity === 'Lahore' ? 152 : 98);
+        const fallback = getCityDefaults(selectedCity, null);
+        if (!isCancelled) {
+          syncLiveValues(fallback.aqi, fallback.wind, fallback.hum, fallback.temp);
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) setIsInitialLoad(false);
       });
-  }, [selectedCity]);
 
-  // Compute simulation & SHAP breakdown on parameter change
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedCity, currentLive]);
+
+  // 2. On Parameter Sliders Change: Trigger Simulation & SHAP Calculation
   useEffect(() => {
+    if (isInitialLoad) return;
     let isCancelled = false;
+
+    const isAtBaseline =
+      windSpeed === baselineWeatherRef.current.wind &&
+      humidity === baselineWeatherRef.current.hum &&
+      temperature === baselineWeatherRef.current.temp &&
+      precipitation === 0 &&
+      !activeScenario;
+
+    if (isAtBaseline) {
+      setSimulatedAqi(baselineAqi);
+      setShapFactors([
+        { name: 'Wind Dispersion', impact: 0.0, desc: `At live baseline (${windSpeed} km/h)`, isPositive: false },
+        { name: 'Humidity', impact: 0.0, desc: `At live baseline (${humidity}%)`, isPositive: false },
+        { name: 'Temperature', impact: 0.0, desc: `At live baseline (${temperature}°C)`, isPositive: false },
+      ]);
+      return;
+    }
 
     fetch('http://localhost:8000/api/simulate', {
       method: 'POST',
@@ -84,17 +206,19 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
           }
         }
       })
-      .catch((err) => {
-        console.warn('Using client-side SHAP model:', err);
-        // Fallback SHAP factors if backend is offline
-        const windImpact = Math.round((14 - windSpeed) * 2.8);
-        const humidityImpact = Math.round((humidity - 50) * 0.7);
-        const tempImpact = Math.round((28 - temperature) * 1.4);
-        const rainImpact = Math.round(-precipitation * 2.2);
+      .catch(() => {
+        // High-precision fallback calculation relative to live baseline
+        const baseWind = baselineWeatherRef.current.wind || 14;
+        const baseHum = baselineWeatherRef.current.hum || 60;
+        const baseTemp = baselineWeatherRef.current.temp || 28;
+
+        const windImpact = Math.round((baseWind - windSpeed) * 2.8);
+        const humidityImpact = Math.round((humidity - baseHum) * 0.6);
+        const sunImpact = Math.round((baseTemp - temperature) * 1.2 - precipitation * 2.0);
 
         setShapFactors([
           {
-            name: windSpeed < 10 ? 'Calm Wind' : 'Wind Dispersion',
+            name: windSpeed < baseWind ? 'Calm Wind' : 'Wind Dispersion',
             impact: windImpact,
             desc: windImpact > 0 ? 'Reduces Smog Dispersal' : 'Enhances Air Ventilation',
             isPositive: windImpact > 0,
@@ -106,10 +230,10 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
             isPositive: humidityImpact > 0,
           },
           {
-            name: precipitation > 0 ? 'Rainwash' : 'Sunlight / Temp',
-            impact: precipitation > 0 ? rainImpact : tempImpact,
-            desc: precipitation > 0 ? 'Wet Scavenging of PM2.5' : tempImpact < 0 ? 'Promotes Pollutant Photo-decay' : 'Traps Ground Air Layer',
-            isPositive: (precipitation > 0 ? rainImpact : tempImpact) > 0,
+            name: precipitation > 0 ? 'Rainwash' : 'Temperature Shift',
+            impact: sunImpact,
+            desc: precipitation > 0 ? 'Wet Scavenging of PM2.5' : sunImpact < 0 ? 'Promotes Pollutant Photo-decay' : 'Traps Ground Air Layer',
+            isPositive: sunImpact > 0,
           },
         ]);
       });
@@ -117,7 +241,7 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
     return () => {
       isCancelled = true;
     };
-  }, [windSpeed, humidity, temperature, precipitation, selectedCity]);
+  }, [windSpeed, humidity, temperature, precipitation, selectedCity, isInitialLoad, activeScenario, baselineAqi]);
 
   // Apply predefined scenario
   const handleScenarioClick = (preset) => {
@@ -128,19 +252,32 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
     setPrecipitation(preset.overrides.precipitation);
   };
 
+  // Reset to current live baseline
+  const handleResetToBaseline = () => {
+    setActiveScenario(null);
+    setWindSpeed(baselineWeatherRef.current.wind);
+    setHumidity(baselineWeatherRef.current.hum);
+    setTemperature(baselineWeatherRef.current.temp);
+    setPrecipitation(0);
+    setSimulatedAqi(baselineAqi);
+  };
+
+  const isModifiedFromBaseline =
+    windSpeed !== baselineWeatherRef.current.wind ||
+    humidity !== baselineWeatherRef.current.hum ||
+    temperature !== baselineWeatherRef.current.temp ||
+    precipitation !== 0 ||
+    activeScenario !== null;
+
   const delta = simulatedAqi - baselineAqi;
   const category = getCategoryInfo(simulatedAqi);
-
-  // Speedometer calculation
-  // AQI range: 0 to 300 -> angle: -180 deg to 0 deg
-  const clampedAqi = Math.max(0, Math.min(300, simulatedAqi));
-  const needleAngle = -180 + (clampedAqi / 300) * 180; // from -180 (left) to 0 (right)
+  const needleAngle = calculateNeedleAngle(simulatedAqi);
 
   return (
     <div className="flex flex-col gap-5 w-full pb-10 select-none text-white font-sans">
       {/* Top Main Heading matching exact image */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white/95 drop-shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-normal tracking-wide text-white/95 drop-shadow-sm">
           Interactive What-If Meteorological Simulator (Explainable AI)
         </h1>
       </div>
@@ -150,19 +287,46 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
         {/* ========================================================================= */}
         {/* LEFT CARD (7 cols): Meteorological Sandbox                                */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-7 rounded-2xl border border-white/10 bg-[#0d1626]/75 p-6 backdrop-blur-md flex flex-col justify-between shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-7 rounded-2xl border border-white/10 bg-[#0d1626]/85 p-6 backdrop-blur-md flex flex-col justify-between shadow-2xl relative overflow-hidden">
           <div className="space-y-6">
-            <h2 className="text-lg font-medium text-white/90 tracking-wide">
-              Meteorological Sandbox
-            </h2>
+            {/* Header with Title & Reset Button */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-white/90 tracking-wide flex items-center gap-2">
+                  <span>Meteorological Sandbox</span>
+                  <Sparkles size={14} className="text-sky-400 opacity-80" />
+                </h2>
+                <span className="text-[11px] text-slate-400 font-mono">
+                  Drag sliders to simulate weather shifts
+                </span>
+              </div>
+
+              {isModifiedFromBaseline && (
+                <button
+                  onClick={handleResetToBaseline}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-300 hover:bg-sky-500/25 hover:text-white text-xs font-medium transition-all shadow-sm cursor-pointer"
+                  title="Reset sliders to today's live baseline"
+                >
+                  <RotateCcw size={12} />
+                  <span>Reset Baseline</span>
+                </button>
+              )}
+            </div>
 
             {/* Slider 1: Wind Speed */}
-            <div className="space-y-2">
+            <div className="space-y-1.5 group">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-300 font-normal">Wind Speed</span>
-                <span className="font-mono text-slate-200 text-sm">{windSpeed} km/h</span>
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                    <Wind size={14} />
+                  </div>
+                  <span className="text-slate-200 font-medium text-sm">Wind Speed</span>
+                </div>
+                <span className="font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 rounded-lg text-xs font-semibold shadow-inner">
+                  {windSpeed} km/h
+                </span>
               </div>
-              <div className="relative flex items-center">
+              <div className="relative flex items-center py-1">
                 <input
                   type="range"
                   min="0"
@@ -173,21 +337,33 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
                     setActiveScenario(null);
                     setWindSpeed(Number(e.target.value));
                   }}
-                  className="w-full h-[6px] rounded-lg appearance-none cursor-pointer bg-slate-800/80"
+                  className="custom-slider slider-emerald w-full"
                   style={{
-                    background: `linear-gradient(to right, #10b981 0%, #34d399 ${(windSpeed / 40) * 100}%, rgba(30, 41, 59, 0.8) ${(windSpeed / 40) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
+                    background: `linear-gradient(to right, #10b981 0%, #34d399 ${getSliderPercent(windSpeed, 0, 40)}%, rgba(30, 41, 59, 0.85) ${getSliderPercent(windSpeed, 0, 40)}%, rgba(30, 41, 59, 0.85) 100%)`,
                   }}
                 />
               </div>
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono px-0.5">
+                <span>0 km/h (Calm)</span>
+                <span>20 km/h</span>
+                <span>40 km/h (Gale)</span>
+              </div>
             </div>
 
-            {/* Slider 2: Relative Humidity */}
-            <div className="space-y-2">
+            {/* Slider 2: Relative Humidity (FIXED & ALIGNED) */}
+            <div className="space-y-1.5 group">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-300 font-normal">Relative Humidity</span>
-                <span className="font-mono text-slate-200 text-sm">{humidity}%</span>
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-md bg-cyan-500/15 text-cyan-400 border border-cyan-500/25">
+                    <Droplets size={14} />
+                  </div>
+                  <span className="text-slate-200 font-medium text-sm">Relative Humidity</span>
+                </div>
+                <span className="font-mono text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 px-2.5 py-0.5 rounded-lg text-xs font-semibold shadow-inner">
+                  {humidity}%
+                </span>
               </div>
-              <div className="relative flex items-center">
+              <div className="relative flex items-center py-1">
                 <input
                   type="range"
                   min="10"
@@ -198,21 +374,33 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
                     setActiveScenario(null);
                     setHumidity(Number(e.target.value));
                   }}
-                  className="w-full h-[6px] rounded-lg appearance-none cursor-pointer bg-slate-800/80"
+                  className="custom-slider slider-cyan w-full"
                   style={{
-                    background: `linear-gradient(to right, #06b6d4 0%, #38bdf8 ${(humidity / 100) * 100}%, rgba(30, 41, 59, 0.8) ${(humidity / 100) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
+                    background: `linear-gradient(to right, #06b6d4 0%, #38bdf8 ${getSliderPercent(humidity, 10, 100)}%, rgba(30, 41, 59, 0.85) ${getSliderPercent(humidity, 10, 100)}%, rgba(30, 41, 59, 0.85) 100%)`,
                   }}
                 />
+              </div>
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono px-0.5">
+                <span>10% (Dry Air)</span>
+                <span>55% (Comfort)</span>
+                <span>100% (Saturated)</span>
               </div>
             </div>
 
             {/* Slider 3: Temperature */}
-            <div className="space-y-2">
+            <div className="space-y-1.5 group">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-300 font-normal">Temperature</span>
-                <span className="font-mono text-slate-200 text-sm">{temperature}°C</span>
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                    <Thermometer size={14} />
+                  </div>
+                  <span className="text-slate-200 font-medium text-sm">Temperature</span>
+                </div>
+                <span className="font-mono text-amber-300 bg-amber-500/10 border border-amber-500/25 px-2.5 py-0.5 rounded-lg text-xs font-semibold shadow-inner">
+                  {temperature}°C
+                </span>
               </div>
-              <div className="relative flex items-center">
+              <div className="relative flex items-center py-1">
                 <input
                   type="range"
                   min="5"
@@ -223,21 +411,33 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
                     setActiveScenario(null);
                     setTemperature(Number(e.target.value));
                   }}
-                  className="w-full h-[6px] rounded-lg appearance-none cursor-pointer bg-slate-800/80"
+                  className="custom-slider slider-amber w-full"
                   style={{
-                    background: `linear-gradient(to right, #f59e0b 0%, #fb923c ${((temperature - 5) / 40) * 100}%, rgba(30, 41, 59, 0.8) ${((temperature - 5) / 40) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
+                    background: `linear-gradient(to right, #f59e0b 0%, #fb923c ${getSliderPercent(temperature, 5, 45)}%, rgba(30, 41, 59, 0.85) ${getSliderPercent(temperature, 5, 45)}%, rgba(30, 41, 59, 0.85) 100%)`,
                   }}
                 />
+              </div>
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono px-0.5">
+                <span>5°C (Chilly)</span>
+                <span>25°C (Mild)</span>
+                <span>45°C (Heatwave)</span>
               </div>
             </div>
 
             {/* Slider 4: Precipitation */}
-            <div className="space-y-2">
+            <div className="space-y-1.5 group">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-300 font-normal">Precipitation</span>
-                <span className="font-mono text-slate-200 text-sm">{precipitation} mm</span>
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/25">
+                    <CloudRain size={14} />
+                  </div>
+                  <span className="text-slate-200 font-medium text-sm">Precipitation (Rainwash)</span>
+                </div>
+                <span className="font-mono text-blue-300 bg-blue-500/10 border border-blue-500/25 px-2.5 py-0.5 rounded-lg text-xs font-semibold shadow-inner">
+                  {precipitation} mm
+                </span>
               </div>
-              <div className="relative flex items-center">
+              <div className="relative flex items-center py-1">
                 <input
                   type="range"
                   min="0"
@@ -248,11 +448,16 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
                     setActiveScenario(null);
                     setPrecipitation(Number(e.target.value));
                   }}
-                  className="w-full h-[6px] rounded-lg appearance-none cursor-pointer bg-slate-800/80"
+                  className="custom-slider slider-blue w-full"
                   style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #60a5fa ${(precipitation / 30) * 100}%, rgba(30, 41, 59, 0.8) ${(precipitation / 30) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
+                    background: `linear-gradient(to right, #3b82f6 0%, #60a5fa ${getSliderPercent(precipitation, 0, 30)}%, rgba(30, 41, 59, 0.85) ${getSliderPercent(precipitation, 0, 30)}%, rgba(30, 41, 59, 0.85) 100%)`,
                   }}
                 />
+              </div>
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono px-0.5">
+                <span>0 mm (Clear)</span>
+                <span>15 mm (Moderate)</span>
+                <span>30 mm (Downpour)</span>
               </div>
             </div>
           </div>
@@ -269,7 +474,7 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
                     onClick={() => handleScenarioClick(preset)}
                     className={`px-5 py-2 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
                       isActive
-                        ? 'bg-slate-800/90 text-white border border-sky-400/80 shadow-[0_0_15px_rgba(56,189,248,0.35)] ring-1 ring-sky-400/50'
+                        ? 'bg-[#15233c] text-white border border-sky-400/80 shadow-[0_0_18px_rgba(56,189,248,0.4)] ring-1 ring-sky-400/60'
                         : 'bg-slate-900/60 text-slate-300 border border-white/10 hover:border-white/25 hover:bg-slate-800/50'
                     }`}
                   >
@@ -286,73 +491,90 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
         {/* ========================================================================= */}
         <div className="lg:col-span-5 flex flex-col justify-between gap-5">
           {/* ----------------------------------------------------------------------- */}
-          {/* Card 1: Speedometer Gauge AQI Card (EXACT MOCKUP)                       */}
+          {/* Card 1: Speedometer Gauge AQI Card (EXACT PIXEL MATCH)                  */}
           {/* ----------------------------------------------------------------------- */}
-          <div className="rounded-2xl border border-white/10 bg-[#0d1626]/75 p-6 backdrop-blur-md flex flex-col items-center justify-between shadow-2xl relative">
+          <div className="rounded-2xl border border-white/10 bg-[#0d1626]/85 p-6 backdrop-blur-md flex flex-col items-center justify-between shadow-2xl relative">
+            {/* Top Live Indicator Header */}
+            <div className="w-full flex items-center justify-between border-b border-white/5 pb-2.5 text-xs">
+              <span className="text-slate-300 font-medium tracking-wide">Atmospheric Speedometer</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-medium text-emerald-300">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                </span>
+                <span>Today Live: {baselineAqi} AQI</span>
+              </div>
+            </div>
+
             {/* SVG Speedometer Gauge Canvas */}
-            <div className="relative w-64 h-36 flex items-center justify-center mt-2">
-              <svg viewBox="0 0 200 120" className="w-full h-full overflow-visible">
+            <div className="relative w-72 h-44 flex items-center justify-center pt-2">
+              <svg viewBox="0 0 220 130" className="w-full h-full overflow-visible">
                 <defs>
-                  {/* Gauge Arc Gradient from Green -> Yellow -> Red */}
-                  <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  {/* High-vibrancy Green -> Yellow -> Orange -> Red Gradient matching exact image */}
+                  <linearGradient id="gauge-arc-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="45%" stopColor="#fbbf24" />
-                    <stop offset="80%" stopColor="#f97316" />
+                    <stop offset="28%" stopColor="#22c55e" />
+                    <stop offset="48%" stopColor="#eab308" />
+                    <stop offset="70%" stopColor="#f97316" />
                     <stop offset="100%" stopColor="#ef4444" />
                   </linearGradient>
 
-                  <filter id="glow-arc" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
+                  {/* Soft subtle glow on the active arc */}
+                  <filter id="gauge-arc-glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3.5" result="blur" />
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+
+                  <filter id="needle-tip-glow">
+                    <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="rgba(255,255,255,0.95)" />
                   </filter>
                 </defs>
 
-                {/* Background Dim Arc */}
+                {/* Background Dim Base Arc */}
                 <path
-                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  d="M 25 110 A 85 85 0 0 1 195 110"
                   fill="none"
                   stroke="rgba(255, 255, 255, 0.08)"
-                  strokeWidth="10"
+                  strokeWidth="15"
                   strokeLinecap="round"
                 />
 
-                {/* Active Colored Arc */}
+                {/* Vibrant Colored Glowing Arc */}
                 <path
-                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  d="M 25 110 A 85 85 0 0 1 195 110"
                   fill="none"
-                  stroke="url(#gauge-gradient)"
-                  strokeWidth="10"
+                  stroke="url(#gauge-arc-gradient)"
+                  strokeWidth="15"
                   strokeLinecap="round"
-                  filter="url(#glow-arc)"
+                  filter="url(#gauge-arc-glow)"
                 />
 
-                {/* Dial Center Pivot Point */}
-                <circle cx="100" cy="100" r="4" fill="#ffffff" />
-
-                {/* White Pointer Needle */}
-                <line
-                  x1="100"
-                  y1="100"
-                  x2="160"
-                  y2="100"
-                  stroke="#ffffff"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  transform={`rotate(${needleAngle}, 100, 100)`}
-                  className="transition-transform duration-500 ease-out drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                />
+                {/* Sleek Solid White Pointer Needle */}
+                <g transform={`rotate(${needleAngle}, 110, 110)`} className="transition-transform duration-500 ease-out">
+                  <line
+                    x1="130"
+                    y1="110"
+                    x2="192"
+                    y2="110"
+                    stroke="#ffffff"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    filter="url(#needle-tip-glow)"
+                    className="drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]"
+                  />
+                </g>
               </svg>
 
-              {/* Central AQI Numerical Readout */}
-              <div className="absolute top-12 flex flex-col items-center justify-center text-center">
-                <span className="text-4xl font-bold font-mono tracking-tight text-white">
+              {/* Central AQI Numerical Readout positioned inside arch */}
+              <div className="absolute top-14 sm:top-16 flex flex-col items-center justify-center text-center">
+                <span className="text-5xl font-bold tracking-tight text-white drop-shadow-md">
                   {simulatedAqi}
                 </span>
-                <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+                <span className="text-[12px] font-medium uppercase tracking-widest text-slate-400 mt-0.5">
                   AQI
                 </span>
                 <span
-                  className="text-xs font-semibold mt-0.5"
+                  className="text-sm font-medium mt-0.5"
                   style={{ color: category.color }}
                 >
                   {category.label}
@@ -361,27 +583,40 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
             </div>
 
             {/* Bottom Predicted Shift Badge */}
-            <div className="mt-4 w-full py-1.5 px-4 rounded-xl bg-slate-900/80 border border-white/5 text-center text-xs font-mono">
-              <span className="text-slate-400">Predicted Shift: </span>
-              <span
-                className={`font-bold ${
-                  delta > 0
-                    ? 'text-rose-400'
-                    : delta < 0
-                    ? 'text-emerald-400'
-                    : 'text-slate-300'
-                }`}
-              >
-                {delta > 0 ? `+${delta}` : delta} AQI from Baseline
-              </span>
+            <div className="mt-4 w-full py-2 px-4 rounded-xl bg-[#09111e]/90 border border-slate-700/60 text-center text-sm font-sans shadow-inner">
+              {delta === 0 ? (
+                <span className="text-slate-300">
+                  ● Showing <span className="font-semibold text-white">Today's Live Baseline</span> ({baselineAqi} AQI). Adjust sliders to simulate!
+                </span>
+              ) : (
+                <>
+                  <span className="text-slate-300">Predicted Shift: </span>
+                  <span
+                    className={`font-semibold ${
+                      delta > 0
+                        ? 'text-[#f87171]'
+                        : delta < 0
+                        ? 'text-emerald-400'
+                        : 'text-slate-300'
+                    }`}
+                  >
+                    {delta > 0 ? `+${delta}` : delta} AQI from Baseline ({baselineAqi})
+                  </span>
+                </>
+              )}
             </div>
+
+            {/* User Guidance Micro-Copy */}
+            <p className="text-[11px] text-slate-400 text-center pt-2 leading-relaxed">
+              💡 <b>Experiment with Sliders</b>: Adjust wind, humidity, or temperature to simulate how today's air quality responds!
+            </p>
           </div>
 
           {/* ----------------------------------------------------------------------- */}
-          {/* Card 2: Explainable AI (SHAP) Waterfall Force Plot (EXACT MOCKUP)       */}
+          {/* Card 2: Explainable AI (SHAP) Waterfall Force Plot (EXACT MATCH)        */}
           {/* ----------------------------------------------------------------------- */}
-          <div className="rounded-2xl border border-white/10 bg-[#0d1626]/75 p-5 backdrop-blur-md flex flex-col justify-between shadow-2xl">
-            <h3 className="text-sm font-semibold text-white/90 tracking-wide pb-3">
+          <div className="rounded-2xl border border-white/10 bg-[#0d1626]/85 p-5 backdrop-blur-md flex flex-col justify-between shadow-2xl">
+            <h3 className="text-sm font-medium text-white/90 tracking-wide pb-3">
               Explainable AI (SHAP) Waterfall Force Plot
             </h3>
 
@@ -389,52 +624,52 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
             <div className="flex items-stretch gap-2 py-2">
               {/* Left Vertical "Factor" Label */}
               <div className="flex items-center justify-center pr-1 select-none">
-                <span className="-rotate-90 text-[11px] text-slate-400 font-medium tracking-wider">
+                <span className="-rotate-90 text-xs text-slate-400 font-normal tracking-wider">
                   Factor
                 </span>
               </div>
 
               {/* 3 Horizontal Factor Rows with Center Zero Axis */}
-              <div className="flex-1 space-y-3.5">
+              <div className="flex-1 space-y-4">
                 {shapFactors.map((factor, idx) => {
                   const isPos = factor.isPositive;
                   const absVal = Math.abs(factor.impact);
-                  // Scale width: max impact ~50 -> width 90%
-                  const barWidthPercent = Math.min(90, Math.max(15, (absVal / 50) * 90));
+                  // Scale width: max impact ~50 -> width 80%
+                  const barWidthPercent = Math.min(85, Math.max(20, (absVal / 50) * 80));
 
                   return (
                     <div key={idx} className="space-y-0.5">
                       {/* Factor Name & Value */}
                       <div className="grid grid-cols-12 gap-2 items-center text-xs">
                         {/* Factor Name Column */}
-                        <div className="col-span-4 text-right text-slate-300 font-mono text-[11px] truncate">
+                        <div className="col-span-4 text-right text-slate-300 text-xs font-normal truncate">
                           {factor.name}
                         </div>
 
                         {/* Force Bar Canvas Column */}
                         <div className="col-span-8 flex items-center relative h-6">
                           {/* Vertical Zero Divider Line */}
-                          <div className="absolute left-[30%] top-0 bottom-0 w-[1.5px] bg-slate-700/80" />
+                          <div className="absolute left-[32%] top-0 bottom-0 w-[1.5px] bg-slate-700/80" />
 
                           {isPos ? (
                             /* Positive Impact: Red Bar Extending Right */
-                            <div className="flex items-center pl-[30%] w-full">
+                            <div className="flex items-center pl-[32%] w-full">
                               <div
-                                className="h-4 rounded-r-sm bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.5)] transition-all duration-300"
+                                className="h-5 rounded-r-[2px] bg-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.4)] transition-all duration-300"
                                 style={{ width: `${barWidthPercent}%` }}
                               />
-                              <span className="ml-1.5 text-[11px] font-mono font-bold text-rose-400">
+                              <span className="ml-2 text-xs font-semibold text-[#f87171]">
                                 +{factor.impact}
                               </span>
                             </div>
                           ) : (
                             /* Negative Impact: Green Bar Extending Left */
-                            <div className="flex items-center justify-end pr-[70%] w-full">
-                              <span className="mr-1.5 text-[11px] font-mono font-bold text-emerald-400">
+                            <div className="flex items-center justify-end pr-[68%] w-full">
+                              <span className="mr-2 text-xs font-semibold text-[#34d399]">
                                 {factor.impact}
                               </span>
                               <div
-                                className="h-4 rounded-l-sm bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.5)] transition-all duration-300"
+                                className="h-5 rounded-l-[2px] bg-[#10b981] shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-300"
                                 style={{ width: `${barWidthPercent}%` }}
                               />
                             </div>
@@ -446,7 +681,7 @@ export default function ShapLab({ selectedCity = 'Karachi' }) {
                       <div className="grid grid-cols-12 gap-2">
                         <div className="col-span-4" />
                         <div className="col-span-8 pl-1">
-                          <span className="text-[10px] text-slate-400 font-mono block truncate">
+                          <span className="text-[11px] text-slate-400 font-normal block truncate">
                             {factor.desc}
                           </span>
                         </div>
