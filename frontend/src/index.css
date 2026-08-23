@@ -127,3 +127,131 @@ body {
   background-image: radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 0);
   background-size: 24px 24px;
 }
+
+/* ==========================================================================
+   Custom Ultra-Sleek Range Sliders (Nordic Slate Glassmorphism)
+   ========================================================================== */
+input[type="range"].custom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+input[type="range"].custom-slider:focus {
+  outline: none;
+}
+
+/* Track Base */
+input[type="range"].custom-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 7px;
+  cursor: pointer;
+  border-radius: 9999px;
+}
+
+input[type="range"].custom-slider::-moz-range-track {
+  width: 100%;
+  height: 7px;
+  cursor: pointer;
+  border-radius: 9999px;
+}
+
+/* Base Thumb Styling */
+input[type="range"].custom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  margin-top: -5.5px;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+}
+
+input[type="range"].custom-slider::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+}
+
+/* Hover & Active Scale */
+input[type="range"].custom-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.18);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.85), 0 2px 7px rgba(0, 0, 0, 0.6);
+}
+
+input[type="range"].custom-slider:active::-webkit-slider-thumb {
+  transform: scale(1.25);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 1), 0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+input[type="range"].custom-slider:hover::-moz-range-thumb {
+  transform: scale(1.18);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.85), 0 2px 7px rgba(0, 0, 0, 0.6);
+}
+
+/* Slider Color Variants */
+/* Emerald (Wind) */
+input[type="range"].slider-emerald::-webkit-slider-thumb {
+  border-color: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+input[type="range"].slider-emerald:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.9), 0 2px 7px rgba(0, 0, 0, 0.6);
+}
+input[type="range"].slider-emerald::-moz-range-thumb {
+  border-color: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Cyan (Humidity) */
+input[type="range"].slider-cyan::-webkit-slider-thumb {
+  border-color: #06b6d4;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+input[type="range"].slider-cyan:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.9), 0 2px 7px rgba(0, 0, 0, 0.6);
+}
+input[type="range"].slider-cyan::-moz-range-thumb {
+  border-color: #06b6d4;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Amber (Temperature) */
+input[type="range"].slider-amber::-webkit-slider-thumb {
+  border-color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+input[type="range"].slider-amber:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.9), 0 2px 7px rgba(0, 0, 0, 0.6);
+}
+input[type="range"].slider-amber::-moz-range-thumb {
+  border-color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Blue (Precipitation) */
+input[type="range"].slider-blue::-webkit-slider-thumb {
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+input[type="range"].slider-blue:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.9), 0 2px 7px rgba(0, 0, 0, 0.6);
+}
+input[type="range"].slider-blue::-moz-range-thumb {
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
+}
