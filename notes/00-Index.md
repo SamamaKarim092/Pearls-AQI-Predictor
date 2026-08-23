@@ -12,21 +12,22 @@ This vault is organized into connected, bite-sized notes written in plain, human
 * [[01-Project-Overview-and-Serverless-Stack]] — What is this project and what does "Serverless ML" mean?
 * [[02-Why-Feature-Store-and-Hopsworks]] — Why use a Feature Store instead of CSV files or SQL?
 * [[03-Configuration-and-Multi-City-Setup]] — Karachi, Lahore, Islamabad coordinates & tracked variables.
+* [[04-FastAPI-Bridge-and-React-Decoupling]] — How FastAPI translates Python ML models into JSON for React.
 
 ### 🔄 02. Data & Feature Pipeline
 * [[01-Understanding-AQI-and-Data-Ingestion]] — Combining weather + air quality data across 3 cities.
 * [[02-Lag-and-Rolling-Features]] — Why yesterday's air quality & cyclical clocks help predict tomorrow.
-* `[[03-Handling-Missing-Sensor-Data]]` — Forward filling, interpolation, and sensor anomalies.
+* [[03-Hopsworks-Cloud-Feature-Store-and-Registry]] — Feature Groups, Feature Views & Model Registry upload.
 
 ### 🤖 03. Machine Learning & Modeling
 * [[01-Model-Tournament-Strategy]] — Baseline vs Ridge vs LightGBM: how we crown the winning model.
 * [[02-Why-Time-Series-Needs-Chronological-Splits]] — The dangers of data leakage in forecasting.
 * [[03-Cross-Validation-in-Time-Series]] — 4-Fold Walk-Forward Cross-Validation across seasons.
-* `[[04-Explainable-AI-with-SHAP]]` — Finding out *why* the model predicted high pollution.
+* [[04-Explainable-AI-with-SHAP]] — Feature importance & What-If scenario simulations.
 
-### 🚀 04. Deployment & Automation *(Coming as we build)*
-* `[[01-Serverless-Automation-with-GitHub-Actions]]` — Running hourly scrapers for $0.
-* `[[02-Streamlit-Dashboard-Design]]` — Building an interactive real-time prediction UI.
+### 🚀 04. Deployment & Automation
+* [[01-Streamlit-Dashboard-and-Health-Advisories]] — Nordic Slate UI design, concentric rings, cigarette metric.
+* [[02-Serverless-Automation-with-GitHub-Actions]] — Running hourly serverless scrapers for $0.
 
 ---
 
