@@ -23,18 +23,18 @@ const CITIES = ['Karachi', 'Lahore', 'Islamabad'];
 const CITY_BASELINES = {
   Karachi: {
     city: 'Karachi',
-    aqi: 52,
+    aqi: 68,
     category: 'Moderate',
     color: '#fbbf24',
-    pm2_5: 14.5,
-    pm10: 38.0,
-    nitrogen_dioxide: 12.0,
-    sulphur_dioxide: 6.5,
+    pm2_5: 23.9,
+    pm10: 52.0,
+    nitrogen_dioxide: 14.0,
+    sulphur_dioxide: 7.0,
     ozone: 18.0,
     temperature_2m: 29.5,
-    wind_speed_10m: 16.2,
-    relative_humidity_2m: 72.0,
-    cigarettes_per_day: 0.7,
+    wind_speed_10m: 19.2,
+    relative_humidity_2m: 71.0,
+    cigarettes_per_day: 1.1,
     lifestyle_actions: [
       { id: 'mask', label: 'Wear N95 Mask', active: false, icon: 'mask' },
       { id: 'air_purifier', label: 'Air Purifier ON', active: false, icon: 'air_purifier' },
@@ -44,18 +44,18 @@ const CITY_BASELINES = {
   },
   Lahore: {
     city: 'Lahore',
-    aqi: 142,
+    aqi: 151,
     category: 'Unhealthy',
     color: '#ef4444',
-    pm2_5: 52.0,
-    pm10: 110.0,
+    pm2_5: 60.3,
+    pm10: 132.0,
     nitrogen_dioxide: 28.0,
     sulphur_dioxide: 14.0,
     ozone: 24.0,
-    temperature_2m: 31.0,
-    wind_speed_10m: 6.5,
-    relative_humidity_2m: 55.0,
-    cigarettes_per_day: 2.4,
+    temperature_2m: 34.9,
+    wind_speed_10m: 2.8,
+    relative_humidity_2m: 56.0,
+    cigarettes_per_day: 2.7,
     lifestyle_actions: [
       { id: 'mask', label: 'Wear N95 Mask', active: true, icon: 'mask' },
       { id: 'air_purifier', label: 'Air Purifier ON', active: true, icon: 'air_purifier' },
@@ -65,18 +65,18 @@ const CITY_BASELINES = {
   },
   Islamabad: {
     city: 'Islamabad',
-    aqi: 98,
-    category: 'Moderate',
-    color: '#fbbf24',
-    pm2_5: 25.0,
-    pm10: 62.0,
+    aqi: 124,
+    category: 'Unhealthy',
+    color: '#f97316',
+    pm2_5: 33.9,
+    pm10: 75.0,
     nitrogen_dioxide: 15.0,
     sulphur_dioxide: 8.0,
     ozone: 20.0,
-    temperature_2m: 26.0,
-    wind_speed_10m: 11.0,
-    relative_humidity_2m: 60.0,
-    cigarettes_per_day: 1.1,
+    temperature_2m: 32.2,
+    wind_speed_10m: 4.1,
+    relative_humidity_2m: 58.0,
+    cigarettes_per_day: 1.5,
     lifestyle_actions: [
       { id: 'mask', label: 'Wear N95 Mask', active: false, icon: 'mask' },
       { id: 'air_purifier', label: 'Air Purifier ON', active: false, icon: 'air_purifier' },
@@ -352,7 +352,7 @@ export default function App() {
           ) : (
             /* ==================== PAGE 3: SHAP WHAT-IF LAB & EXPLAINABILITY SIMULATOR ==================== */
             <div>
-              <ShapLab selectedCity={selectedCity} />
+              <ShapLab selectedCity={selectedCity} currentLive={activeItem} />
             </div>
           )}
         </main>
