@@ -6,11 +6,13 @@ import TimeTravelScrubber from './components/TimeTravelScrubber';
 import PollutantBars from './components/PollutantBars';
 import TrendsDashboard from './components/TrendsDashboard';
 import ShapLab from './components/ShapLab';
+import ModelTournament from './components/ModelTournament';
 import Aurora from './components/Aurora';
 import {
   Bell,
   Menu,
   Activity,
+  Trophy,
   TrendingUp,
   Sliders,
   ChevronDown,
@@ -128,7 +130,7 @@ function generateFallbackTimeline(city) {
 }
 
 export default function App() {
-  const [activePage, setActivePage] = useState('live'); // 'live' | 'trends' | 'shap'
+  const [activePage, setActivePage] = useState('tournament'); // 'tournament' | 'live' | 'trends' | 'shap'
   const [selectedCity, setSelectedCity] = useState('Karachi');
   const [loading, setLoading] = useState(false);
   const [scrubberIndex, setScrubberIndex] = useState(24);
@@ -201,24 +203,15 @@ export default function App() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-[1240px] flex-col justify-between px-4 sm:px-6 py-5 lg:px-8">
         {/* Top Navbar Header */}
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4 backdrop-blur-[2px]">
-          {/* Left Brand Lockup + Live City Badge */}
+          {/* Left Brand Lockup (Live Karachi badge removed as requested) */}
           <div className="flex items-center gap-3 select-none">
             <div className="flex items-baseline gap-2">
               <span className="text-xl font-bold tracking-tight text-white drop-shadow-sm">Pearls</span>
               <span className="text-xl font-light text-slate-300">AQI Predictor</span>
             </div>
-
-            {/* Live City Badge */}
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-xs font-medium text-emerald-300">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span>Live &bull; {selectedCity}</span>
-            </div>
           </div>
 
-          {/* Center 3-Page Switcher Navigation Tabs */}
+          {/* Center Navigation Tabs */}
           <div className="flex items-center bg-slate-900/80 p-1 rounded-xl border border-white/10 backdrop-blur-md shadow-lg">
             <button
               onClick={() => setActivePage('live')}
@@ -229,7 +222,19 @@ export default function App() {
               }`}
             >
               <Activity size={13} />
-              <span>Live Monitor</span>
+              <span>Overview</span>
+            </button>
+
+            <button
+              onClick={() => setActivePage('tournament')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                activePage === 'tournament'
+                  ? 'bg-teal-500/25 text-teal-300 border border-teal-500/40 shadow-[0_0_12px_rgba(20,184,166,0.3)]'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Trophy size={13} />
+              <span>Model Tournament</span>
             </button>
 
             <button
@@ -241,7 +246,7 @@ export default function App() {
               }`}
             >
               <TrendingUp size={13} />
-              <span>3-Day & 7-Day Trends</span>
+              <span>Analytics</span>
             </button>
 
             <button
@@ -253,7 +258,7 @@ export default function App() {
               }`}
             >
               <Sliders size={13} />
-              <span>What-If Simulator</span>
+              <span>What-If Lab</span>
             </button>
           </div>
 
@@ -293,8 +298,11 @@ export default function App() {
 
         {/* Main Content Layout (Conditional Page Rendering) */}
         <main className="flex-1 py-4">
-          {activePage === 'live' ? (
-            /* ==================== PAGE 1: REAL-TIME LIVE MONITOR ==================== */
+          {activePage === 'tournament' ? (
+            /* ==================== PAGE 0: MODEL TOURNAMENT & MLOPS LEADERBOARD ==================== */
+            <ModelTournament selectedCity={selectedCity} />
+          ) : activePage === 'live' ? (
+            /* ==================== PAGE 1: REAL-TIME LIVE MONITOR / OVERVIEW ==================== */
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-white mb-5 drop-shadow-sm flex items-center justify-between">
                 <span>Air Quality Dashboard</span>
@@ -345,7 +353,7 @@ export default function App() {
               </div>
             </div>
           ) : activePage === 'trends' ? (
-            /* ==================== PAGE 2: 7-DAY & 3-DAY TREND INTELLIGENCE ==================== */
+            /* ==================== PAGE 2: 7-DAY & 3-DAY TREND INTELLIGENCE / ANALYTICS ==================== */
             <div>
               <TrendsDashboard selectedCity={selectedCity} />
             </div>
