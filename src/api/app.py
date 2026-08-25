@@ -184,8 +184,9 @@ def get_forecast(city: str = Query(DEFAULT_CITY, description="Target city name")
         predicted_pm25_series = np.clip(model.predict(X_all), 4.0, 500.0)
         feats_df["predicted_pm2_5"] = predicted_pm25_series
 
-        # Determine exact current LIVE index based on timestamps
-        now_local = pd.Timestamp.now()
+        # Determine exact current LIVE index based on timestamps in city's local timezone
+        city_tz = CITIES[city].timezone if city in CITIES else "Asia/Karachi"
+        now_local = pd.Timestamp.now(tz=city_tz).tz_localize(None)
         time_diffs = (feats_df["timestamp"] - now_local).abs()
         now_idx = int(time_diffs.argmin())
         if now_idx < 0 or now_idx >= len(feats_df):
@@ -462,7 +463,40 @@ def simulate_scenario(req: SimulationRequest) -> Dict[str, Any]:
         feats_df = build_feature_pipeline(raw_df, drop_na=False)
         model, meta = load_or_train_model(req.city, feats_df.dropna())
 
-        sample_row = feats_df.dropna().iloc[[-1]][meta["feature_names"]].copy()
+        feature_cols = [c for c in meta["feature_names"] if c in feats_df.columns]
+        X_all = feats_df[feature_cols].ffill().bfill()
+
+        # Locate exact LIVE timestamp row matching the forecast endpoint in city's local timezone
+        city_tz = CITIES[req.city].timezone if req.city in CITIES else "Asia/Karachi"
+        now_local = pd.Timestamp.now(tz=city_tz).tz_localize(None)
+        time_diffs = (feats_df["timestamp"] - now_local).abs()
+        now_idx = int(time_diffs.argmin())
+        if now_idx < 0 or now_idx >= len(feats_df):
+            now_idx = min(48, len(feats_df) - 1)
+
+        live_row = feats_df.iloc[now_idx]
+        sample_row = X_all.iloc[[now_idx]].copy()
+
+        # Live baseline observed values matching /api/forecast exactly
+        if pd.notna(live_row.get("us_aqi")) and live_row["us_aqi"] > 0:
+            orig_aqi = float(live_row["us_aqi"])
+            orig_pm25 = float(live_row.get("pm2_5", 15.0))
+        else:
+            orig_pm25 = float(live_row.get("pm2_5", model.predict(sample_row)[0]))
+            orig_aqi = calculate_us_epa_aqi(orig_pm25)
+
+        base_wind = float(live_row.get("wind_speed_10m", 14.0))
+        base_temp = float(live_row.get("temperature_2m", 28.0))
+        base_hum = float(live_row.get("relative_humidity_2m", 60.0))
+
+        # Check if sliders are essentially at the live baseline values
+        is_default = (
+            abs(req.wind_speed_10m - base_wind) < 1.0 and
+            abs(req.temperature_2m - base_temp) < 1.0 and
+            abs(req.relative_humidity_2m - base_hum) < 1.0 and
+            (req.precipitation is None or req.precipitation == 0) and
+            (req.traffic_reduction_pct is None or req.traffic_reduction_pct == 0)
+        )
 
         overrides = {
             "wind_speed_10m": req.wind_speed_10m,
@@ -470,85 +504,112 @@ def simulate_scenario(req: SimulationRequest) -> Dict[str, Any]:
             "relative_humidity_2m": req.relative_humidity_2m,
         }
 
-        # Scale lag PM2.5 features if user simulated traffic/emission reduction
-        if req.traffic_reduction_pct and req.traffic_reduction_pct > 0:
-            scale_factor = max(0.2, 1.0 - (req.traffic_reduction_pct / 100.0))
-            for col in sample_row.columns:
-                if "pm2_5_lag" in col or "pm2_5_rolling" in col:
-                    overrides[col] = float(sample_row[col].values[0]) * scale_factor
+        if is_default:
+            sim_pm25 = orig_pm25
+            sim_aqi = orig_aqi
+            delta_pm25 = 0.0
+            delta_aqi = 0.0
+        else:
+            # Scale lag PM2.5 features if user simulated traffic/emission reduction
+            if req.traffic_reduction_pct and req.traffic_reduction_pct > 0:
+                scale_factor = max(0.2, 1.0 - (req.traffic_reduction_pct / 100.0))
+                for col in sample_row.columns:
+                    if "pm2_5_lag" in col or "pm2_5_rolling" in col:
+                        overrides[col] = float(sample_row[col].values[0]) * scale_factor
 
-        res = simulate_what_if_scenario(model, sample_row, overrides)
-        orig_pm25 = res["original_prediction"]
-        sim_pm25 = max(2.0, res["simulated_prediction"])
-        delta_pm25 = sim_pm25 - orig_pm25
-
-        orig_aqi = calculate_us_epa_aqi(orig_pm25)
-        sim_aqi = calculate_us_epa_aqi(sim_pm25)
-        orig_cat = get_aqi_category_info(orig_aqi)
-        sim_cat = get_aqi_category_info(sim_aqi)
-
-        # Cigarette equivalence difference (Berkeley Earth formula: 22 µg/m³ = 1 cig/day)
-        orig_cigs = max(0.1, round(orig_pm25 / 22.0, 1))
-        sim_cigs = max(0.1, round(sim_pm25 / 22.0, 1))
-        cigs_saved = max(0.0, round(orig_cigs - sim_cigs, 1))
-
-        # Real SHAP TreeExplainer Attribution Calculation
-        shap_factors = []
-        try:
-            sample_features = feats_df.dropna()[meta["feature_names"]].iloc[-30:]
-            explainer = compute_shap_explainer(model, sample_features)
-            
-            # Create the simulated single row
+            base_model_pred = float(model.predict(sample_row)[0])
             sim_row = sample_row.copy()
             for k, v in overrides.items():
                 if k in sim_row.columns:
                     sim_row[k] = v
-                    
-            explanation = explain_single_prediction(explainer, sim_row)
-            contributions_df = explanation.get("contributions", pd.DataFrame())
-            
-            # Map top feature contributions to user-friendly factor cards
-            for _, row in contributions_df.head(6).iterrows():
-                feat_name = str(row["Feature"])
-                shap_val = float(row["SHAP_Contribution"])
-                
-                # Humanize feature names
-                friendly_name = feat_name
-                desc = "Atmospheric feature influence on PM2.5"
-                if "wind" in feat_name:
-                    friendly_name = "Calm Wind" if req.wind_speed_10m < 10 else "Wind Dispersion"
-                    desc = "Reduces Smog Dispersal" if shap_val > 0 else "Enhances Air Ventilation"
-                elif "humidity" in feat_name:
-                    friendly_name = "Humidity"
-                    desc = "Enhances Particle Formation" if shap_val > 0 else "Dries Suspended Moisture"
-                elif "temperature" in feat_name:
-                    friendly_name = "Temperature"
-                    desc = "Thermal Inversion Smog Trap" if shap_val > 0 else "Promotes Pollutant Photo-decay"
-                elif "precipitation" in feat_name or "rain" in feat_name:
-                    friendly_name = "Rainwash"
-                    desc = "Wet Scavenging of PM2.5"
-                elif "lag" in feat_name or "rolling" in feat_name:
-                    friendly_name = "Emission & Traffic Load"
-                    desc = "Vehicle Exhaust & Baseline Smog"
-                    
-                shap_factors.append({
-                    "name": friendly_name,
-                    "impact": round(shap_val, 1),
-                    "desc": desc,
-                    "isPositive": shap_val > 0,
-                    "raw_feature": feat_name,
-                })
-        except Exception as shap_err:
-            logger.warning(f"SHAP explainer fallback: {shap_err}")
-            # Fallback SHAP factors if TreeExplainer encounters unexpected dimension
-            wind_impact = round((14.0 - req.wind_speed_10m) * 2.8, 1)
-            humidity_impact = round((req.relative_humidity_2m - 50.0) * 0.7, 1)
-            temp_impact = round((28.0 - req.temperature_2m) * 1.4, 1)
+            sim_model_pred = float(model.predict(sim_row)[0])
+            pred_delta = sim_model_pred - base_model_pred
+
+            # Wet scavenging of PM2.5 by rain
+            if req.precipitation and req.precipitation > 0:
+                wash_reduction = min(0.60, req.precipitation * 0.025)
+                pred_delta -= (orig_pm25 * wash_reduction)
+
+            sim_pm25 = max(2.0, orig_pm25 + pred_delta)
+            sim_aqi = calculate_us_epa_aqi(sim_pm25)
+            delta_pm25 = sim_pm25 - orig_pm25
+            delta_aqi = sim_aqi - orig_aqi
+
+        orig_cat = get_aqi_category_info(orig_aqi)
+        sim_cat = get_aqi_category_info(sim_aqi)
+
+        orig_cigs = max(0.1, round(orig_pm25 / 22.0, 1))
+        sim_cigs = max(0.1, round(sim_pm25 / 22.0, 1))
+        cigs_saved = max(0.0, round(orig_cigs - sim_cigs, 1))
+
+        # Explainable AI (SHAP) Factor Attribution Calculation
+        shap_factors = []
+        if is_default:
             shap_factors = [
-                {"name": "Calm Wind" if req.wind_speed_10m < 10 else "Wind Dispersion", "impact": wind_impact, "desc": "Reduces Smog Dispersal" if wind_impact > 0 else "Enhances Air Ventilation", "isPositive": wind_impact > 0},
-                {"name": "Humidity", "impact": humidity_impact, "desc": "Enhances Particle Formation" if humidity_impact > 0 else "Dries Suspended Moisture", "isPositive": humidity_impact > 0},
-                {"name": "Sunlight / Temp", "impact": temp_impact, "desc": "Thermal Inversion Smog Trap" if temp_impact > 0 else "Promotes Pollutant Photo-decay", "isPositive": temp_impact > 0},
+                {"name": "Wind Dispersion", "impact": 0.0, "desc": f"At live baseline ({round(base_wind)} km/h)", "isPositive": False},
+                {"name": "Humidity", "impact": 0.0, "desc": f"At live baseline ({round(base_hum)}%)", "isPositive": False},
+                {"name": "Temperature", "impact": 0.0, "desc": f"At live baseline ({round(base_temp)}°C)", "isPositive": False},
             ]
+        else:
+            try:
+                sample_features = X_all.iloc[-30:]
+                explainer = compute_shap_explainer(model, sample_features)
+
+                sim_row_shap = sample_row.copy()
+                for k, v in overrides.items():
+                    if k in sim_row_shap.columns:
+                        sim_row_shap[k] = v
+
+                base_exp = explain_single_prediction(explainer, sample_row)
+                sim_exp = explain_single_prediction(explainer, sim_row_shap)
+
+                base_contribs = dict(zip(base_exp["contributions"]["Feature"], base_exp["contributions"]["SHAP_Contribution"]))
+                sim_contribs = dict(zip(sim_exp["contributions"]["Feature"], sim_exp["contributions"]["SHAP_Contribution"]))
+
+                for feat in ["wind_speed_10m", "relative_humidity_2m", "temperature_2m"]:
+                    if feat in sim_contribs and feat in base_contribs:
+                        diff = sim_contribs[feat] - base_contribs[feat]
+                        if abs(diff) >= 0.1:
+                            if "wind" in feat:
+                                fname = "Calm Wind" if req.wind_speed_10m < base_wind else "Wind Dispersion"
+                                fdesc = "Reduces Smog Dispersal" if diff > 0 else "Enhances Air Ventilation"
+                            elif "humidity" in feat:
+                                fname = "Humidity"
+                                fdesc = "Enhances Particle Formation" if diff > 0 else "Dries Suspended Moisture"
+                            else:
+                                fname = "Temperature"
+                                fdesc = "Thermal Inversion Trap" if diff > 0 else "Promotes Pollutant Decay"
+                            shap_factors.append({
+                                "name": fname,
+                                "impact": round(diff, 1),
+                                "desc": fdesc,
+                                "isPositive": diff > 0,
+                            })
+
+                if req.precipitation and req.precipitation > 0:
+                    rain_impact = round(-orig_pm25 * min(0.60, req.precipitation * 0.025), 1)
+                    shap_factors.append({
+                        "name": "Rainwash Scavenging",
+                        "impact": rain_impact,
+                        "desc": f"Wet deposition removes {round(abs(rain_impact), 1)} µg/m³ PM2.5",
+                        "isPositive": False,
+                    })
+            except Exception as shap_err:
+                logger.warning(f"SHAP explainer fallback: {shap_err}")
+                wind_diff = round((base_wind - req.wind_speed_10m) * 1.5, 1)
+                hum_diff = round((req.relative_humidity_2m - base_hum) * 0.4, 1)
+                temp_diff = round((base_temp - req.temperature_2m) * 0.8, 1)
+                if abs(wind_diff) >= 0.1:
+                    shap_factors.append({"name": "Calm Wind" if req.wind_speed_10m < base_wind else "Wind Dispersion", "impact": wind_diff, "desc": "Atmospheric air ventilation change", "isPositive": wind_diff > 0})
+                if abs(hum_diff) >= 0.1:
+                    shap_factors.append({"name": "Humidity", "impact": hum_diff, "desc": "Atmospheric moisture change", "isPositive": hum_diff > 0})
+                if abs(temp_diff) >= 0.1:
+                    shap_factors.append({"name": "Temperature", "impact": temp_diff, "desc": "Atmospheric temperature inversion change", "isPositive": temp_diff > 0})
+
+            if not shap_factors:
+                shap_factors = [
+                    {"name": "Atmospheric Equilibrium", "impact": 0.0, "desc": "Sliders at baseline levels", "isPositive": False}
+                ]
 
         return {
             "city": req.city,
@@ -562,7 +623,7 @@ def simulate_scenario(req: SimulationRequest) -> Dict[str, Any]:
             "simulated_color": sim_cat["color"],
             "simulated_advice": sim_cat["advice"],
             "delta_pm2_5": round(delta_pm25, 1),
-            "delta_aqi": round(sim_aqi - orig_aqi, 1),
+            "delta_aqi": round(delta_aqi, 1),
             "original_cigs": orig_cigs,
             "simulated_cigs": sim_cigs,
             "cigs_saved": cigs_saved,
