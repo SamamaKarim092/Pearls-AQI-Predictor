@@ -11,13 +11,11 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import DiurnalGithubHeatmap from './DiurnalGithubHeatmap';
+import AnalyticsSkeleton from './AnalyticsSkeleton';
 
 const SUB_TABS = [
   { id: '3day', label: 'Upcoming 3-Day Forecast', badge: '10Pearls Spec' },
   { id: '7day', label: 'Upcoming 7-Day Forecast', badge: 'Extended' },
-  { id: '30day', label: '30-Day Trend' },
-  { id: 'seasonal', label: 'Seasonal' },
-  { id: 'history', label: '2-Year History' },
 ];
 
 function WeatherIcon({ type, className = 'w-6 h-6 text-amber-400' }) {
@@ -40,6 +38,12 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
   const [trendsData, setTrendsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pollutantModal, setPollutantModal] = useState(null);
+  const [hoveredSeason, setHoveredSeason] = useState(null);
+
+  const FULL_MONTH_NAMES = {
+    Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April', May: 'May', Jun: 'June',
+    Jul: 'July', Aug: 'August', Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December'
+  };
 
   // Fetch trends and forecasts for selected city and active horizon
   useEffect(() => {
@@ -57,7 +61,7 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
         }
       })
       .catch((err) => {
-        console.warn('Using offline trends fallback:', err);
+        console.warn('Error fetching trends:', err);
       })
       .finally(() => {
         if (!isCancelled) setLoading(false);
@@ -68,49 +72,14 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
     };
   }, [selectedCity, activeTab]);
 
-  // Fallback defaults
-  const kpis = trendsData?.kpis || {
-    average_aqi: {
-      value: selectedCity === 'Karachi' ? 52 : selectedCity === 'Lahore' ? 142 : 136,
-      label: selectedCity === 'Karachi' ? 'Good Air' : 'Unhealthy',
-      color: selectedCity === 'Karachi' ? '#10b981' : '#ef4444',
-      period: activeTab === '3day' ? 'Upcoming 3-Day Average AQI' : 'Upcoming 7-Day Average AQI',
-    },
-    cleanest_day: { day_name: 'Thu', aqi: selectedCity === 'Karachi' ? 32 : 98, date_str: '20 Aug', color: '#10b981' },
-    peak_smog: { day_name: 'Sun', aqi: selectedCity === 'Karachi' ? 88 : 175, category: selectedCity === 'Karachi' ? 'Moderate' : 'Unhealthy', color: selectedCity === 'Karachi' ? '#fbbf24' : '#ef4444' },
-    dominant_hazard: { pollutant: 'PM2.5', percentage: '85%', subtext: 'PM2.5, 85%  e.g., 10%' },
-  };
-
-  const dailyCards = trendsData?.daily_cards || [
-    { day_name: 'Thu', date_str: '20 Aug', aqi: 48, color: '#10b981', weather_icon: 'sun', condition: 'Sunny' },
-    { day_name: 'Fri', date_str: '21 Aug', aqi: 52, color: '#10b981', weather_icon: 'cloud', condition: 'Cloudy' },
-    { day_name: 'Sat', date_str: '22 Aug', aqi: 32, color: '#10b981', weather_icon: 'rain', condition: 'Rain' },
-    { day_name: 'Sun', date_str: '23 Aug', aqi: 32, color: '#10b981', weather_icon: 'rain', condition: 'Rain' },
-    { day_name: 'Mon', date_str: '24 Aug', aqi: 82, color: '#fbbf24', weather_icon: 'cloud', condition: 'Haze' },
-    { day_name: 'Tue', date_str: '25 Aug', aqi: 86, color: '#fbbf24', weather_icon: 'wind', condition: 'Breezy' },
-    { day_name: 'Wed', date_str: '26 Aug', aqi: 77, color: '#f97316', weather_icon: 'sun', condition: 'Sunny' },
-  ].slice(0, activeTab === '3day' ? 3 : 7);
-
-  // 12 Months matching exact reference heights and color gradients
-  const seasonalBars = [
-    { month: 'Jan', height: 68, isPeak: false },
-    { month: 'Feb', height: 58, isPeak: false },
-    { month: 'Mar', height: 48, isPeak: false },
-    { month: 'Apr', height: 64, isPeak: true },
-    { month: 'May', height: 76, isPeak: true },
-    { month: 'Jun', height: 78, isPeak: true },
-    { month: 'Jul', height: 54, isPeak: false },
-    { month: 'Aug', height: 42, isPeak: false },
-    { month: 'Sep', height: 48, isPeak: false },
-    { month: 'Oct', height: 70, isPeak: true },
-    { month: 'Nov', height: 96, isPeak: true },
-    { month: 'Dec', height: 74, isPeak: true },
-  ];
+  const kpis = trendsData?.kpis;
+  const dailyCards = trendsData?.daily_cards || [];
+  const seasonalBars = trendsData?.seasonal_bars || [];
+  const curvePts = trendsData?.curve_points || [];
 
   // Helper to generate glowing SVG bezier path for forecast chart
   const svgWidth = 1000;
   const svgHeight = 220;
-  const curvePts = trendsData?.curve_points || [];
 
   const generateChartPath = () => {
     if (!curvePts || curvePts.length === 0) {
@@ -176,8 +145,12 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
         </div>
       </div>
 
-      {/* Row 1: 4 KPI Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {loading || !trendsData || !kpis ? (
+        <AnalyticsSkeleton activeTab={activeTab} />
+      ) : (
+        <div className="flex flex-col gap-5 w-full animate-data-enter">
+          {/* Row 1: 4 KPI Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Average AQI */}
         <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5 backdrop-blur-md flex flex-col justify-between">
           <span className="text-xs font-medium text-slate-400">
@@ -351,43 +324,99 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
         {/* CARD 1 (6 cols): Dedicated GitHub-Style Diurnal Activity Heatmap */}
         {/* ------------------------------------------------------------- */}
         <div className="lg:col-span-6 xl:col-span-6">
-          <DiurnalGithubHeatmap />
+          <DiurnalGithubHeatmap
+            activeTab={activeTab}
+            dailyCards={dailyCards}
+            selectedCity={selectedCity}
+          />
         </div>
 
         {/* ------------------------------------------------------------- */}
         {/* CARD 2 (3 cols): 2-Year Seasonal Smog Pattern                */}
         {/* ------------------------------------------------------------- */}
-        <div className="lg:col-span-3 xl:col-span-3 rounded-2xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl">
-          <div className="pb-2">
+        <div className="lg:col-span-3 xl:col-span-3 rounded-2xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl relative overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-2 border-b border-white/5">
             <h3 className="text-sm font-semibold text-white tracking-wide">
               2-Year Seasonal Smog Pattern
             </h3>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800/80 border border-white/10 text-rose-300">
+              12 Months
+            </span>
           </div>
 
-          {/* 12 Vertical Rounded Pill Bars matching exact mockup */}
-          <div className="flex items-end justify-between gap-1.5 h-48 pt-4 px-1 pb-1">
-            {seasonalBars.map((bar, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group">
+          {/* 12 Vertical Rounded Pill Bars with interactive hover */}
+          <div className="relative flex items-end justify-between gap-1.5 h-44 pt-6 px-1 pb-1">
+            {seasonalBars.map((bar, idx) => {
+              const heightPct = bar.height ?? Math.min(100, Math.max(20, Math.round((bar.aqi / 220) * 100)));
+              const isPeak = bar.is_peak ?? bar.isPeak ?? false;
+              const fullMonth = FULL_MONTH_NAMES[bar.month] || bar.month;
+              const isHovered = hoveredSeason?.month === bar.month;
+
+              return (
                 <div
-                  className={`w-2.5 sm:w-3 rounded-full transition-all duration-300 group-hover:scale-110 ${
-                    bar.isPeak
-                      ? 'bg-gradient-to-t from-rose-600 via-rose-500 to-orange-400 shadow-[0_0_8px_rgba(244,63,94,0.45)]'
-                      : 'bg-gradient-to-t from-slate-600 via-slate-400 to-slate-300'
-                  }`}
-                  style={{ height: `${bar.height}%` }}
-                  title={`${bar.month}: Seasonal Smog Index`}
-                />
-              </div>
-            ))}
+                  key={idx}
+                  className="flex-1 flex flex-col items-center justify-end h-full relative cursor-pointer group"
+                  onMouseEnter={() =>
+                    setHoveredSeason({
+                      month: bar.month,
+                      fullMonth,
+                      aqi: bar.aqi || Math.round(heightPct * 2.2),
+                      isPeak,
+                    })
+                  }
+                  onMouseLeave={() => setHoveredSeason(null)}
+                >
+                  {/* Floating Mini Tooltip on Hover */}
+                  {isHovered && (
+                    <div className="absolute -top-7 z-30 px-2 py-0.5 rounded-md bg-slate-900/95 border border-white/20 text-[10px] font-mono text-white shadow-xl whitespace-nowrap animate-fadeIn pointer-events-none">
+                      {bar.month} &bull; AQI {bar.aqi || Math.round(heightPct * 2.2)}
+                    </div>
+                  )}
+
+                  {/* Vertical Bar */}
+                  <div
+                    className={`w-2.5 sm:w-3 rounded-full transition-all duration-300 ${
+                      isHovered
+                        ? 'scale-y-105 scale-x-125 z-20 brightness-125 ' +
+                          (isPeak
+                            ? 'bg-gradient-to-t from-rose-500 via-rose-400 to-orange-300 shadow-[0_0_14px_rgba(244,63,94,0.8)] ring-2 ring-rose-400/50'
+                            : 'bg-gradient-to-t from-sky-400 via-teal-300 to-emerald-300 shadow-[0_0_12px_rgba(45,212,191,0.8)] ring-2 ring-teal-400/50')
+                        : isPeak
+                        ? 'bg-gradient-to-t from-rose-600 via-rose-500 to-orange-400 shadow-[0_0_8px_rgba(244,63,94,0.45)]'
+                        : 'bg-gradient-to-t from-slate-600 via-slate-400 to-slate-300 opacity-80'
+                    }`}
+                    style={{ height: `${heightPct}%` }}
+                  />
+                </div>
+              );
+            })}
           </div>
 
-          {/* 12 Month 3-Letter Labels below */}
-          <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-white/5">
-            {seasonalBars.map((b, i) => (
-              <span key={i} className="text-center flex-1">
-                {b.month}
-              </span>
-            ))}
+          {/* Interactive Bottom Readout Ribbon (Replaces the cramped static Jan-Dec letters) */}
+          <div className="mt-2 flex items-center justify-between pt-2 border-t border-white/5 text-[11px] font-mono select-none">
+            {hoveredSeason ? (
+              <div className="flex items-center justify-between w-full text-slate-200">
+                <span className="font-semibold text-white">{hoveredSeason.fullMonth}</span>
+                <span
+                  className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${
+                    hoveredSeason.isPeak
+                      ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40'
+                      : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
+                  }`}
+                >
+                  {hoveredSeason.isPeak ? 'Peak Smog' : 'Clean'}
+                </span>
+                <span className="font-bold text-white font-mono">
+                  ~{hoveredSeason.aqi} AQI
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between w-full text-slate-400 text-[10px]">
+                <span>Hover bar for month info</span>
+                <span className="text-rose-300/80 font-medium">Nov–Feb Smog Peak</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -401,135 +430,53 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
             </h3>
           </div>
 
-          {/* 4 Clean Pollutant Guideline Rows */}
+          {/* Clean Dynamic Pollutant Guideline Rows */}
           <div className="space-y-4 my-auto py-1">
-            {/* Row 1: PM2.5 */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-white font-mono w-14">PM2.5</span>
-                <div className="flex-1 px-2">
-                  <div className="flex justify-center text-[9px] text-slate-400 font-mono leading-none pb-0.5">
-                    WHO guideline
+            {(trendsData?.dominant_pollutants || [
+              { name: 'PM2.5', current: 16.8, who_guideline: 15.0, unit: 'µg/m³', pct: 68 },
+              { name: 'PM10', current: 36.9, who_guideline: 45.0, unit: 'µg/m³', pct: 62 },
+              { name: 'NO2', current: 14.0, who_guideline: 25.0, unit: 'µg/m³', pct: 45 },
+              { name: 'SO2', current: 7.5, who_guideline: 40.0, unit: 'µg/m³', pct: 50 },
+            ]).map((pollutant) => (
+              <div key={pollutant.name} className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-white font-mono w-14">{pollutant.name}</span>
+                  <div className="flex-1 px-2">
+                    <div className="flex justify-between text-[9px] text-slate-400 font-mono leading-none pb-0.5">
+                      <span>{pollutant.current} {pollutant.unit}</span>
+                      <span>WHO {pollutant.who_guideline}</span>
+                    </div>
+                    <div className="relative w-full h-2.5 rounded-full bg-slate-800/90 overflow-visible">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400 shadow-[0_0_6px_rgba(45,212,191,0.5)]"
+                        style={{ width: `${Math.min(100, pollutant.pct)}%` }}
+                      />
+                      <div
+                        className="absolute -top-1 bottom-0 w-[2px] h-4.5 bg-white/80 rounded-full"
+                        style={{ left: `${Math.min(98, pollutant.pct)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="relative w-full h-2.5 rounded-full bg-slate-800/90 overflow-visible">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400 shadow-[0_0_6px_rgba(45,212,191,0.5)]"
-                      style={{ width: '68%' }}
-                    />
-                    {/* WHO Marker Tick Line */}
-                    <div className="absolute -top-1 bottom-0 left-[68%] w-[2px] h-4.5 bg-white/80 rounded-full" />
-                  </div>
+                  <button
+                    onClick={() =>
+                      setPollutantModal({
+                        name: pollutant.name,
+                        desc: `Real-time atmospheric concentration for ${selectedCity} calibrated against WHO safe air exposure standards.`,
+                        who: `${pollutant.who_guideline} ${pollutant.unit} (24-hour mean)`,
+                      })
+                    }
+                    className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5"
+                  >
+                    <Info size={14} />
+                  </button>
                 </div>
-                <button
-                  onClick={() =>
-                    setPollutantModal({
-                      name: 'PM2.5 (Fine Particulate Matter)',
-                      desc: 'Particles <2.5 micrometers from vehicle exhaust and power stations that penetrate deep into lungs and blood circulation.',
-                      who: '15 µg/m³ (24-hour mean)',
-                    })
-                  }
-                  className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5"
-                >
-                  <Info size={14} />
-                </button>
               </div>
-            </div>
-
-            {/* Row 2: PM10 */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-white font-mono w-14">PM10</span>
-                <div className="flex-1 px-2">
-                  <div className="flex justify-center text-[9px] text-slate-400 font-mono leading-none pb-0.5">
-                    WHO guideline
-                  </div>
-                  <div className="relative w-full h-2.5 rounded-full bg-slate-800/90 overflow-visible">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400 shadow-[0_0_6px_rgba(45,212,191,0.5)]"
-                      style={{ width: '62%' }}
-                    />
-                    <div className="absolute -top-1 bottom-0 left-[62%] w-[2px] h-4.5 bg-white/80 rounded-full" />
-                  </div>
-                </div>
-                <button
-                  onClick={() =>
-                    setPollutantModal({
-                      name: 'PM10 (Coarse Inhalable Particles)',
-                      desc: 'Inhalable dust, construction debris, pollen, and road dust with diameters <10 micrometers.',
-                      who: '45 µg/m³ (24-hour mean)',
-                    })
-                  }
-                  className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5"
-                >
-                  <Info size={14} />
-                </button>
-              </div>
-            </div>
-
-            {/* Row 3: NO2 */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-white font-mono w-14">NO2</span>
-                <div className="flex-1 px-2">
-                  <div className="flex justify-center text-[9px] text-slate-400 font-mono leading-none pb-0.5">
-                    WHO
-                  </div>
-                  <div className="relative w-full h-2.5 rounded-full bg-slate-800/90 overflow-visible">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400"
-                      style={{ width: '45%' }}
-                    />
-                    <div className="absolute -top-1 bottom-0 left-[55%] w-[2px] h-4.5 bg-white/80 rounded-full" />
-                  </div>
-                </div>
-                <button
-                  onClick={() =>
-                    setPollutantModal({
-                      name: 'NO2 (Nitrogen Dioxide)',
-                      desc: 'Reddish-brown toxic gas from diesel vehicles and industrial fuel burning that inflames airways.',
-                      who: '25 µg/m³ (24-hour mean)',
-                    })
-                  }
-                  className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5"
-                >
-                  <Info size={14} />
-                </button>
-              </div>
-            </div>
-
-            {/* Row 4: SO2 */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-white font-mono w-14">SO2</span>
-                <div className="flex-1 px-2">
-                  <div className="flex justify-center text-[9px] text-slate-400 font-mono leading-none pb-0.5">
-                    WHO
-                  </div>
-                  <div className="relative w-full h-2.5 rounded-full bg-slate-800/90 overflow-visible">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400"
-                      style={{ width: '50%' }}
-                    />
-                    <div className="absolute -top-1 bottom-0 left-[55%] w-[2px] h-4.5 bg-white/80 rounded-full" />
-                  </div>
-                </div>
-                <button
-                  onClick={() =>
-                    setPollutantModal({
-                      name: 'SO2 (Sulphur Dioxide)',
-                      desc: 'Sharp, pungent gas emitted during high-sulphur fossil fuel burning and thermal power generation.',
-                      who: '40 µg/m³ (24-hour mean)',
-                    })
-                  }
-                  className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5"
-                >
-                  <Info size={14} />
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
+    </div>
+  )}
 
       {/* Pollutant Info Modal */}
       {pollutantModal && (
