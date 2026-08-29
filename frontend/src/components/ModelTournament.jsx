@@ -102,7 +102,7 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
         <div className="flex flex-col md:flex-row items-end justify-center -space-y-4 md:space-y-0">
           
           {/* ==================== 2ND PLACE: SILVER (LEFT CYLINDER) ==================== */}
-          <div className="flex flex-col items-center w-full md:w-[335px] lg:w-[355px] md:-mr-5 z-10 order-2 md:order-1">
+          <div className="flex flex-col items-center w-full md:w-[335px] lg:w-[355px] md:-mr-5 z-10 order-2 md:order-1 animate-podium-silver">
             {/* Silver Card (Floating above cylinder with Silver metallic shine) */}
             <div className="w-full max-w-[305px] rounded-2xl bg-[#0c1926]/95 border-2 border-[#94a3b8] p-4 sm:p-5 backdrop-blur-2xl shadow-[0_0_30px_rgba(148,163,184,0.3),0_18px_45px_rgba(0,0,0,0.85)] mb-3.5 sm:mb-4 z-10 transition-all duration-300 hover:shadow-[0_0_45px_rgba(203,213,225,0.45),0_20px_50px_rgba(0,0,0,0.95)] hover:-translate-y-1.5 relative">
               {/* Subtle ambient silver blur behind */}
@@ -216,9 +216,9 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
           </div>
 
           {/* ==================== 1ST PLACE: GOLD CHAMPION (CENTER CYLINDER) ==================== */}
-          <div className="flex flex-col items-center w-full md:w-[380px] lg:w-[415px] z-20 order-1 md:order-2">
+          <div className="flex flex-col items-center w-full md:w-[380px] lg:w-[415px] z-20 order-1 md:order-2 animate-podium-gold">
             {/* Gold Champion Card (Floating above cylinder with Emerald/Mint shine) */}
-            <div className="w-full max-w-[340px] rounded-2xl bg-[#081b24]/95 border-2 border-[#00f5c4] p-4 sm:p-5 backdrop-blur-2xl shadow-[0_0_35px_rgba(0,245,196,0.35),0_18px_45px_rgba(0,0,0,0.9)] mb-3.5 sm:mb-4 z-20 transition-all duration-300 hover:shadow-[0_0_50px_rgba(0,245,196,0.5),0_20px_50px_rgba(0,0,0,0.95)] hover:-translate-y-1.5 relative">
+            <div className="w-full max-w-[340px] rounded-2xl bg-[#081b24]/95 border-2 border-[#00f5c4] p-4 sm:p-5 backdrop-blur-2xl shadow-[0_0_35px_rgba(0,245,196,0.35),0_18px_45px_rgba(0,0,0,0.9)] mb-3.5 sm:mb-4 z-20 transition-all duration-300 hover:shadow-[0_0_50px_rgba(0,245,196,0.5),0_20px_50px_rgba(0,0,0,0.95)] hover:-translate-y-1.5 relative animate-gold-card-float animate-gold-glow">
               {/* Subtle ambient emerald blur behind */}
               <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-2xl blur-sm -z-10 pointer-events-none" />
 
@@ -338,7 +338,7 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
           </div>
 
           {/* ==================== 3RD PLACE: BRONZE (RIGHT CYLINDER) ==================== */}
-          <div className="flex flex-col items-center w-full md:w-[335px] lg:w-[355px] md:-ml-5 z-10 order-3">
+          <div className="flex flex-col items-center w-full md:w-[335px] lg:w-[355px] md:-ml-5 z-10 order-3 animate-podium-bronze">
             {/* Bronze Card (Floating above cylinder with Bronze/Amber shine) */}
             <div className="w-full max-w-[305px] rounded-2xl bg-[#181210]/95 border-2 border-[#d97706] p-4 sm:p-5 backdrop-blur-2xl shadow-[0_0_30px_rgba(217,119,6,0.3),0_18px_45px_rgba(0,0,0,0.85)] mb-3.5 sm:mb-4 z-10 transition-all duration-300 hover:shadow-[0_0_45px_rgba(245,158,11,0.45),0_20px_50px_rgba(0,0,0,0.95)] hover:-translate-y-1.5 relative">
               {/* Subtle ambient bronze/amber blur behind */}
@@ -458,7 +458,7 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
         {/* ==================== LEFT CHART: 4-FOLD SEASONAL CROSS-VALIDATION ==================== */}
-        <div className="rounded-2xl bg-[#091522]/80 border border-white/10 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl">
+        <div className="rounded-2xl bg-[#091522]/80 border border-white/10 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl animate-card-rise-1 transition-all duration-300 hover:border-white/20">
           {/* Card Header & Legend */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/5">
             <h2 className="text-base font-semibold text-white tracking-tight">
@@ -579,7 +579,7 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
         </div>
 
         {/* ==================== RIGHT CHART: ACTUAL VS PREDICTED CALIBRATION ==================== */}
-        <div className="rounded-2xl bg-[#091522]/80 border border-white/10 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl">
+        <div className="rounded-2xl bg-[#091522]/80 border border-white/10 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl animate-card-rise-2 transition-all duration-300 hover:border-white/20">
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-white/5">
             <h2 className="text-base font-semibold text-white tracking-tight">
@@ -724,7 +724,7 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
         {/* 4 Telemetry Metric Cards Bento Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: 17,520 Training Samples */}
-          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)]">
+          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-1">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
               <Database size={20} />
             </div>
@@ -739,7 +739,7 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
           </div>
 
           {/* Card 2: Hopsworks Model Registry v2.1 */}
-          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)]">
+          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-2">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
               <Box size={20} />
             </div>
@@ -754,8 +754,8 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
           </div>
 
           {/* Card 3: Inference Latency: 12ms */}
-          <div className="rounded-2xl bg-[#0a1520]/80 border border-white/10 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-lg transition-all hover:border-white/20">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-800/80 border border-white/10 text-slate-300">
+          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
               <Timer size={20} />
             </div>
             <div>
@@ -769,7 +769,7 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
           </div>
 
           {/* Card 4: GitHub Actions Serverless Cron: Active */}
-          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)]">
+          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-300">
               <GitBranch size={20} />
             </div>
