@@ -255,3 +255,192 @@ input[type="range"].slider-blue::-moz-range-thumb {
   border-color: #3b82f6;
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.6), 0 2px 5px rgba(0, 0, 0, 0.5);
 }
+
+/* Shimmer & Transition Animations */
+@keyframes data-entrance {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.995);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+.animate-data-enter {
+  animation: data-entrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes glass-shimmer-sweep {
+  0% {
+    transform: translateX(-150%);
+  }
+  50% {
+    transform: translateX(50%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.glass-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  animation: glass-shimmer-sweep 2.2s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   Model Tournament Podium & Card Entrance Animations
+   ========================================================================== */
+@keyframes podium-rise-gold {
+  0% {
+    opacity: 0;
+    transform: translateY(90px) scale(0.88);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.02);
+    filter: blur(0px);
+  }
+  80% {
+    transform: translateY(3px) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes podium-rise-silver {
+  0% {
+    opacity: 0;
+    transform: translateY(80px) scale(0.9);
+    filter: blur(6px);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.01);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes podium-rise-bronze {
+  0% {
+    opacity: 0;
+    transform: translateY(80px) scale(0.9);
+    filter: blur(6px);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.01);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes card-rise-smooth {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes gold-glow-pulse {
+  0% {
+    box-shadow: 0 0 25px rgba(0, 245, 196, 0.25), 0 15px 40px rgba(0, 0, 0, 0.85);
+  }
+  100% {
+    box-shadow: 0 0 45px rgba(0, 245, 196, 0.5), 0 20px 50px rgba(0, 0, 0, 0.95);
+  }
+}
+
+.animate-podium-gold {
+  animation: podium-rise-gold 1.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-podium-silver {
+  animation: podium-rise-silver 1.25s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
+}
+
+.animate-podium-bronze {
+  animation: podium-rise-bronze 1.25s cubic-bezier(0.16, 1, 0.3, 1) 0.30s both;
+}
+
+.animate-card-rise-1 {
+  animation: card-rise-smooth 1.05s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+}
+
+.animate-card-rise-2 {
+  animation: card-rise-smooth 1.05s cubic-bezier(0.16, 1, 0.3, 1) 0.58s both;
+}
+
+.animate-telemetry-stagger-1 {
+  animation: card-rise-smooth 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.70s both;
+}
+
+.animate-telemetry-stagger-2 {
+  animation: card-rise-smooth 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.80s both;
+}
+
+.animate-telemetry-stagger-3 {
+  animation: card-rise-smooth 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.90s both;
+}
+
+.animate-telemetry-stagger-4 {
+  animation: card-rise-smooth 0.95s cubic-bezier(0.16, 1, 0.3, 1) 1.00s both;
+}
+
+.animate-gold-card-float {
+  animation: float-gentle 5.5s ease-in-out infinite 1.4s;
+}
+
+.animate-gold-glow {
+  animation: gold-glow-pulse 3.5s ease-in-out infinite alternate;
+}
+
+
+
