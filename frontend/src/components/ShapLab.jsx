@@ -6,7 +6,9 @@ import {
   CloudRain,
   RotateCcw,
   Sparkles,
+  Cpu,
 } from 'lucide-react';
+import ShapLabSkeleton from './ShapLabSkeleton';
 
 // Preset scenarios matching exact mockup
 const SCENARIO_PRESETS = [
@@ -89,6 +91,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
     { name: 'Temperature', impact: 0.0, desc: `At live baseline (${initialValues.temp}°C)`, isPositive: false },
   ]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isSimulating, setIsSimulating] = useState(false);
 
   // Store the live baseline weather references to accurately detect default state
   const baselineWeatherRef = useRef({
@@ -101,6 +104,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
   // 1. On Mount or City Change / live data update: Fetch & Sync Today's Live Sensor Conditions
   useEffect(() => {
     let isCancelled = false;
+    setIsInitialLoad(true);
 
     const syncLiveValues = (liveAqi, liveWind, liveHumidity, liveTemp) => {
       baselineWeatherRef.current = {
@@ -117,6 +121,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
       setTemperature(liveTemp);
       setPrecipitation(0);
       setActiveScenario(null);
+      setIsSimulating(false);
 
       setShapFactors([
         { name: 'Wind Dispersion', impact: 0.0, desc: `At live baseline (${liveWind} km/h)`, isPositive: false },
@@ -151,7 +156,10 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
         }
       })
       .finally(() => {
-        if (!isCancelled) setIsInitialLoad(false);
+        if (!isCancelled) {
+          // Slight warm-up delay for smooth skeleton exit transition
+          setTimeout(() => setIsInitialLoad(false), 200);
+        }
       });
 
     return () => {
@@ -159,7 +167,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
     };
   }, [selectedCity, currentLive]);
 
-  // 2. On Parameter Sliders Change: Trigger Simulation & SHAP Calculation
+  // 2. On Parameter Sliders Change: Trigger Debounced Simulation & SHAP Calculation
   useEffect(() => {
     if (isInitialLoad) return;
     let isCancelled = false;
@@ -172,6 +180,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
       !activeScenario;
 
     if (isAtBaseline) {
+      setIsSimulating(false);
       setSimulatedAqi(baselineAqi);
       setShapFactors([
         { name: 'Wind Dispersion', impact: 0.0, desc: `At live baseline (${windSpeed} km/h)`, isPositive: false },
@@ -181,71 +190,84 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
       return;
     }
 
-    fetch('http://localhost:8000/api/simulate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        city: selectedCity,
-        wind_speed_10m: Number(windSpeed),
-        temperature_2m: Number(temperature),
-        relative_humidity_2m: Number(humidity),
-        precipitation: Number(precipitation),
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!isCancelled && data) {
-          if (data.simulated_aqi !== undefined) {
-            setSimulatedAqi(Math.round(data.simulated_aqi));
-          }
-          if (data.original_aqi !== undefined) {
-            setBaselineAqi(Math.round(data.original_aqi));
-          }
-          if (data.shap_factors && data.shap_factors.length > 0) {
-            setShapFactors(data.shap_factors);
-          }
-        }
+    // Set simulation loading skeleton state
+    setIsSimulating(true);
+
+    // Trailing debounce timer (120ms) for smooth slider drag without bottlenecking
+    const debounceTimer = setTimeout(() => {
+      fetch('http://localhost:8000/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city: selectedCity,
+          wind_speed_10m: Number(windSpeed),
+          temperature_2m: Number(temperature),
+          relative_humidity_2m: Number(humidity),
+          precipitation: Number(precipitation),
+        }),
       })
-      .catch(() => {
-        // High-precision fallback calculation relative to live baseline
-        const baseWind = baselineWeatherRef.current.wind || 14;
-        const baseHum = baselineWeatherRef.current.hum || 60;
-        const baseTemp = baselineWeatherRef.current.temp || 28;
+        .then((res) => res.json())
+        .then((data) => {
+          if (!isCancelled && data) {
+            if (data.simulated_aqi !== undefined) {
+              setSimulatedAqi(Math.round(data.simulated_aqi));
+            }
+            if (data.original_aqi !== undefined) {
+              setBaselineAqi(Math.round(data.original_aqi));
+            }
+            if (data.shap_factors && data.shap_factors.length > 0) {
+              setShapFactors(data.shap_factors);
+            }
+          }
+        })
+        .catch(() => {
+          // High-precision fallback calculation relative to live baseline
+          const baseWind = baselineWeatherRef.current.wind || 14;
+          const baseHum = baselineWeatherRef.current.hum || 60;
+          const baseTemp = baselineWeatherRef.current.temp || 28;
 
-        const windImpact = Math.round((baseWind - windSpeed) * 2.8);
-        const humidityImpact = Math.round((humidity - baseHum) * 0.6);
-        const sunImpact = Math.round((baseTemp - temperature) * 1.2 - precipitation * 2.0);
+          const windImpact = Math.round((baseWind - windSpeed) * 2.8);
+          const humidityImpact = Math.round((humidity - baseHum) * 0.6);
+          const sunImpact = Math.round((baseTemp - temperature) * 1.2 - precipitation * 2.0);
 
-        setShapFactors([
-          {
-            name: windSpeed < baseWind ? 'Calm Wind' : 'Wind Dispersion',
-            impact: windImpact,
-            desc: windImpact > 0 ? 'Reduces Smog Dispersal' : 'Enhances Air Ventilation',
-            isPositive: windImpact > 0,
-          },
-          {
-            name: 'Humidity',
-            impact: humidityImpact,
-            desc: humidityImpact > 0 ? 'Enhances Particle Formation' : 'Dries Suspended Moisture',
-            isPositive: humidityImpact > 0,
-          },
-          {
-            name: precipitation > 0 ? 'Rainwash' : 'Temperature Shift',
-            impact: sunImpact,
-            desc: precipitation > 0 ? 'Wet Scavenging of PM2.5' : sunImpact < 0 ? 'Promotes Pollutant Photo-decay' : 'Traps Ground Air Layer',
-            isPositive: sunImpact > 0,
-          },
-        ]);
-      });
+          setShapFactors([
+            {
+              name: windSpeed < baseWind ? 'Calm Wind' : 'Wind Dispersion',
+              impact: windImpact,
+              desc: windImpact > 0 ? 'Reduces Smog Dispersal' : 'Enhances Air Ventilation',
+              isPositive: windImpact > 0,
+            },
+            {
+              name: 'Humidity',
+              impact: humidityImpact,
+              desc: humidityImpact > 0 ? 'Enhances Particle Formation' : 'Dries Suspended Moisture',
+              isPositive: humidityImpact > 0,
+            },
+            {
+              name: precipitation > 0 ? 'Rainwash' : 'Temperature Shift',
+              impact: sunImpact,
+              desc: precipitation > 0 ? 'Wet Scavenging of PM2.5' : sunImpact < 0 ? 'Promotes Pollutant Photo-decay' : 'Traps Ground Air Layer',
+              isPositive: sunImpact > 0,
+            },
+          ]);
+        })
+        .finally(() => {
+          if (!isCancelled) {
+            setIsSimulating(false);
+          }
+        });
+    }, 120);
 
     return () => {
       isCancelled = true;
+      clearTimeout(debounceTimer);
     };
   }, [windSpeed, humidity, temperature, precipitation, selectedCity, isInitialLoad, activeScenario, baselineAqi]);
 
   // Apply predefined scenario
   const handleScenarioClick = (preset) => {
     setActiveScenario(preset.id);
+    setIsSimulating(true);
     setWindSpeed(preset.overrides.wind_speed_10m);
     setHumidity(preset.overrides.relative_humidity_2m);
     setTemperature(preset.overrides.temperature_2m);
@@ -255,12 +277,17 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
   // Reset to current live baseline
   const handleResetToBaseline = () => {
     setActiveScenario(null);
+    setIsSimulating(false);
     setWindSpeed(baselineWeatherRef.current.wind);
     setHumidity(baselineWeatherRef.current.hum);
     setTemperature(baselineWeatherRef.current.temp);
     setPrecipitation(0);
     setSimulatedAqi(baselineAqi);
   };
+
+  if (isInitialLoad) {
+    return <ShapLabSkeleton selectedCity={selectedCity} />;
+  }
 
   const isModifiedFromBaseline =
     windSpeed !== baselineWeatherRef.current.wind ||
@@ -274,8 +301,8 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
   const needleAngle = calculateNeedleAngle(simulatedAqi);
 
   return (
-    <div className="flex flex-col gap-5 w-full pb-10 select-none text-white font-sans">
-      {/* Top Main Heading matching exact image */}
+    <div className="flex flex-col gap-5 w-full pb-10 select-none text-white font-sans animate-data-enter">
+      {/* Top Main Heading */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-normal tracking-wide text-white/95 drop-shadow-sm">
           Interactive What-If Meteorological Simulator (Explainable AI)
@@ -287,8 +314,11 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
         {/* ========================================================================= */}
         {/* LEFT CARD (7 cols): Meteorological Sandbox                                */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-7 rounded-2xl border border-white/10 bg-[#0d1626]/85 p-6 backdrop-blur-md flex flex-col justify-between shadow-2xl relative overflow-hidden">
-          <div className="space-y-6">
+        <div className="lg:col-span-7 rounded-2xl border border-white/10 bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden">
+          {/* Ambient Glass Glow */}
+          <div className="absolute -top-10 -left-10 w-72 h-72 rounded-full bg-teal-500/15 blur-3xl pointer-events-none" />
+
+          <div className="space-y-6 relative z-10">
             {/* Header with Title & Reset Button */}
             <div className="flex items-center justify-between">
               <div>
@@ -350,7 +380,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
               </div>
             </div>
 
-            {/* Slider 2: Relative Humidity (FIXED & ALIGNED) */}
+            {/* Slider 2: Relative Humidity */}
             <div className="space-y-1.5 group">
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
@@ -491,19 +521,38 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
         {/* ========================================================================= */}
         <div className="lg:col-span-5 flex flex-col justify-between gap-5">
           {/* ----------------------------------------------------------------------- */}
-          {/* Card 1: Speedometer Gauge AQI Card (EXACT PIXEL MATCH)                  */}
+          {/* Card 1: Speedometer Gauge AQI Card                                      */}
           {/* ----------------------------------------------------------------------- */}
-          <div className="rounded-2xl border border-white/10 bg-[#0d1626]/85 p-6 backdrop-blur-md flex flex-col items-center justify-between shadow-2xl relative">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden min-h-[300px]">
+            {/* Dynamic Status Ambient Glow */}
+            <div
+              className="absolute top-1/3 left-1/2 -translate-x-1/2 w-52 h-44 rounded-full blur-3xl pointer-events-none transition-all duration-700"
+              style={{
+                backgroundColor: category.color,
+                opacity: 0.28,
+              }}
+            />
             {/* Top Live Indicator Header */}
             <div className="w-full flex items-center justify-between border-b border-white/5 pb-2.5 text-xs">
               <span className="text-slate-300 font-medium tracking-wide">Atmospheric Speedometer</span>
-              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-medium text-emerald-300">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                </span>
-                <span>Today Live: {baselineAqi} AQI</span>
-              </div>
+              
+              {isSimulating ? (
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-[11px] font-medium text-sky-300">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-sky-500" />
+                  </span>
+                  <span>Simulating SHAP...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-medium text-emerald-300">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                  </span>
+                  <span>Today Live: {baselineAqi} AQI</span>
+                </div>
+              )}
             </div>
 
             {/* SVG Speedometer Gauge Canvas */}
@@ -547,10 +596,14 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                   strokeWidth="15"
                   strokeLinecap="round"
                   filter="url(#gauge-arc-glow)"
+                  className={isSimulating ? 'opacity-50' : 'opacity-100'}
                 />
 
                 {/* Sleek Solid White Pointer Needle */}
-                <g transform={`rotate(${needleAngle}, 110, 110)`} className="transition-transform duration-500 ease-out">
+                <g
+                  transform={`rotate(${needleAngle}, 110, 110)`}
+                  className={`transition-transform duration-500 ease-out ${isSimulating ? 'opacity-30' : 'opacity-100'}`}
+                >
                   <line
                     x1="130"
                     y1="110"
@@ -565,8 +618,14 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                 </g>
               </svg>
 
-              {/* Central AQI Numerical Readout positioned inside arch */}
-              <div className="absolute top-14 sm:top-16 flex flex-col items-center justify-center text-center">
+              {/* Central AQI Numerical Readout with Smooth Atmospheric Blur Texture */}
+              <div
+                className={`absolute top-14 sm:top-16 flex flex-col items-center justify-center text-center transition-all duration-300 ${
+                  isSimulating
+                    ? 'blur-[6px] opacity-60 scale-95 select-none animate-pulse'
+                    : 'blur-0 opacity-100 scale-100'
+                }`}
+              >
                 <span className="text-5xl font-bold tracking-tight text-white drop-shadow-md">
                   {simulatedAqi}
                 </span>
@@ -583,13 +642,18 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
             </div>
 
             {/* Bottom Predicted Shift Badge */}
-            <div className="mt-4 w-full py-2 px-4 rounded-xl bg-[#09111e]/90 border border-slate-700/60 text-center text-sm font-sans shadow-inner">
-              {delta === 0 ? (
-                <span className="text-slate-300">
+            <div className="mt-4 w-full py-2 px-4 rounded-xl bg-[#09111e]/90 border border-slate-700/60 text-center text-sm font-sans shadow-inner min-h-[38px] flex items-center justify-center">
+              {isSimulating ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Cpu size={14} className="animate-spin text-sky-400" />
+                  <span className="text-xs text-sky-300 font-mono">Running LightGBM TreeExplainer...</span>
+                </div>
+              ) : delta === 0 ? (
+                <span className="text-slate-300 text-xs sm:text-sm">
                   ● Showing <span className="font-semibold text-white">Today's Live Baseline</span> ({baselineAqi} AQI). Adjust sliders to simulate!
                 </span>
               ) : (
-                <>
+                <div className="text-xs sm:text-sm">
                   <span className="text-slate-300">Predicted Shift: </span>
                   <span
                     className={`font-semibold ${
@@ -602,7 +666,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                   >
                     {delta > 0 ? `+${delta}` : delta} AQI from Baseline ({baselineAqi})
                   </span>
-                </>
+                </div>
               )}
             </div>
 
@@ -613,12 +677,22 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
           </div>
 
           {/* ----------------------------------------------------------------------- */}
-          {/* Card 2: Explainable AI (SHAP) Waterfall Force Plot (EXACT MATCH)        */}
+          {/* Card 2: Explainable AI (SHAP) Waterfall Force Plot                      */}
           {/* ----------------------------------------------------------------------- */}
-          <div className="rounded-2xl border border-white/10 bg-[#0d1626]/85 p-5 backdrop-blur-md flex flex-col justify-between shadow-2xl">
-            <h3 className="text-sm font-medium text-white/90 tracking-wide pb-3">
-              Explainable AI (SHAP) Waterfall Force Plot
-            </h3>
+          <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-xl flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden min-h-[220px]">
+            {/* Ambient Glass Glow */}
+            <div className="absolute w-52 h-52 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+            <div className="flex items-center justify-between pb-3">
+              <h3 className="text-sm font-medium text-white/90 tracking-wide">
+                Explainable AI (SHAP) Waterfall Force Plot
+              </h3>
+              {isSimulating && (
+                <span className="text-[11px] font-mono text-sky-300 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400 animate-ping" />
+                  Recalculating...
+                </span>
+              )}
+            </div>
 
             {/* Waterfall Plot Body with Left "Factor" Vertical Label */}
             <div className="flex items-stretch gap-2 py-2">
@@ -638,7 +712,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                   const barWidthPercent = Math.min(85, Math.max(20, (absVal / 50) * 80));
 
                   return (
-                    <div key={idx} className="space-y-0.5">
+                    <div key={idx} className={`space-y-0.5 transition-opacity duration-200 ${isSimulating ? 'opacity-60' : 'opacity-100'}`}>
                       {/* Factor Name & Value */}
                       <div className="grid grid-cols-12 gap-2 items-center text-xs">
                         {/* Factor Name Column */}
@@ -655,7 +729,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                             /* Positive Impact: Red Bar Extending Right */
                             <div className="flex items-center pl-[32%] w-full">
                               <div
-                                className="h-5 rounded-r-[2px] bg-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.4)] transition-all duration-300"
+                                className={`h-5 rounded-r-[2px] bg-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.4)] transition-all duration-300 ${isSimulating ? 'glass-shimmer' : ''}`}
                                 style={{ width: `${barWidthPercent}%` }}
                               />
                               <span className="ml-2 text-xs font-semibold text-[#f87171]">
@@ -669,7 +743,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                                 {factor.impact}
                               </span>
                               <div
-                                className="h-5 rounded-l-[2px] bg-[#10b981] shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-300"
+                                className={`h-5 rounded-l-[2px] bg-[#10b981] shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-300 ${isSimulating ? 'glass-shimmer' : ''}`}
                                 style={{ width: `${barWidthPercent}%` }}
                               />
                             </div>
