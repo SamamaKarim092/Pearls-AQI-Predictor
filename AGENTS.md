@@ -56,7 +56,8 @@ Welcome! This document sets the permanent rules, guardrails, coding standards, a
 * **Serverless & Decoupled Pipelines**:
   * `src/features/`: Data ingestion, cleaning, feature transformation, feature store upload.
   * `src/models/`: Training pipelines, evaluation, model registry upload.
-  * `src/app/`: Streamlit dashboard, real-time prediction inference, SHAP visualizer.
+  * `src/api/`: FastAPI REST microservice (endpoints for forecasts, what-if simulations, leaderboards).
+  * `frontend/`: React / Vite pixel-perfect Nordic Slate dashboard.
   * `src/utils/`: Reusable helpers, config loaders, logging.
 * **Secrets Management**:
   * ❌ **NEVER** commit API keys, tokens, or credentials to git.
