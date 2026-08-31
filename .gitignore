@@ -47,3 +47,9 @@ credentials.json
 # OS Specific
 .DS_Store
 Thumbs.db
+
+# Data & Model Binaries
+data/
+models/*.joblib
+frontend/dist/
+frontend/node_modules/
