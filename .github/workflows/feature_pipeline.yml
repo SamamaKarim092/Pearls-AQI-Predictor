@@ -33,6 +33,7 @@ jobs:
 
       - name: 🚀 Run Feature Ingestion & Hopsworks Sync
         env:
+          PYTHONPATH: .
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
           HOPSWORKS_PROJECT_NAME: ${{ secrets.HOPSWORKS_PROJECT_NAME || 'pearls_aqi_predictor' }}
         run: |
