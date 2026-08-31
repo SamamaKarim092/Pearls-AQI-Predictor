@@ -145,6 +145,17 @@ def load_or_train_model(city_name: str, features_df: pd.DataFrame) -> Tuple[Any,
 
 
 # --------------------------- ENDPOINTS ---------------------------
+@app.get("/")
+def root_status() -> Dict[str, str]:
+    """Root endpoint for Render health and API discovery."""
+    return {
+        "status": "online",
+        "service": "Pearls AQI Predictor FastAPI Backend",
+        "version": "2.0.0",
+        "docs": "/docs",
+    }
+
+
 @app.get("/api/health")
 def health_check() -> Dict[str, str]:
     """Health check endpoint."""
