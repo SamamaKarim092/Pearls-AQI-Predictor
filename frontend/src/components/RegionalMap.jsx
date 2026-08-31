@@ -14,8 +14,7 @@ import {
 import { geoMercator, geoPath } from 'd3-geo';
 import pakistanGeoJson from '../data/pakistan_provinces.json';
 import RegionalMapSkeleton from './RegionalMapSkeleton';
-
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import { API_BASE_URL } from '../config';
 
 export default function RegionalMap() {
   const [loading, setLoading] = useState(true);

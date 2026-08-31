@@ -1,0 +1,6 @@
+// API Configuration for local development and cloud production deployment
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8000'
+    : 'https://pearls-aqi-predictor-xxw6.onrender.com');

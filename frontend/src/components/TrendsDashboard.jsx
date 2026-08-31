@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import DiurnalGithubHeatmap from './DiurnalGithubHeatmap';
 import AnalyticsSkeleton from './AnalyticsSkeleton';
+import { API_BASE_URL } from '../config';
 
 const SUB_TABS = [
   { id: '3day', label: 'Upcoming 3-Day Forecast', badge: '10Pearls Spec' },
@@ -97,7 +98,7 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
     let isCancelled = false;
     setLoading(true);
 
-    fetch(`http://localhost:8000/api/trends?city=${selectedCity}&horizon=${activeTab}`)
+    fetch(`${API_BASE_URL}/api/trends?city=${selectedCity}&horizon=${activeTab}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Status: ${res.status}`);
         return res.json();

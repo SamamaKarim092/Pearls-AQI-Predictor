@@ -10,6 +10,7 @@ import ModelTournament from './components/ModelTournament';
 import RegionalMap from './components/RegionalMap';
 import OverviewSkeleton from './components/OverviewSkeleton';
 import Aurora from './components/Aurora';
+import { API_BASE_URL } from './config';
 import {
   Bell,
   Menu,
@@ -36,7 +37,7 @@ export default function App() {
     let isCancelled = false;
     setLoading(true);
 
-    fetch(`http://localhost:8000/api/forecast?city=${selectedCity}`)
+    fetch(`${API_BASE_URL}/api/forecast?city=${selectedCity}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Status: ${res.status}`);
         return res.json();

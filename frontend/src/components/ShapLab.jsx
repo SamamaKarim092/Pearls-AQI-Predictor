@@ -9,6 +9,7 @@ import {
   Cpu,
 } from 'lucide-react';
 import ShapLabSkeleton from './ShapLabSkeleton';
+import { API_BASE_URL } from '../config';
 
 // Preset scenarios matching exact mockup
 const SCENARIO_PRESETS = [
@@ -138,7 +139,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
       syncLiveValues(liveAqi, liveWind, liveHumidity, liveTemp);
     }
 
-    fetch(`http://localhost:8000/api/forecast?city=${selectedCity}`)
+    fetch(`${API_BASE_URL}/api/forecast?city=${selectedCity}`)
       .then((res) => res.json())
       .then((data) => {
         if (!isCancelled && data && data.current) {
@@ -195,7 +196,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
 
     // Trailing debounce timer (120ms) for smooth slider drag without bottlenecking
     const debounceTimer = setTimeout(() => {
-      fetch('http://localhost:8000/api/simulate', {
+      fetch(`${API_BASE_URL}/api/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
