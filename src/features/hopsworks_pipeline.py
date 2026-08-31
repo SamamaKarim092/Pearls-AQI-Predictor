@@ -80,10 +80,13 @@ def upload_features_to_hopsworks(
     Returns:
         True if successfully uploaded or cached locally, False on error.
     """
-    # Always save a local parquet backup
-    local_path = DATA_DIR / f"{feature_group_name}_v{version}.parquet"
-    df.to_parquet(local_path, index=False)
-    logger.info(f"Local backup saved to: {local_path} ({len(df)} rows)")
+    # Save local parquet backup if engine available
+    try:
+        local_path = DATA_DIR / f"{feature_group_name}_v{version}.parquet"
+        df.to_parquet(local_path, index=False)
+        logger.info(f"Local backup saved to: {local_path} ({len(df)} rows)")
+    except Exception as e:
+        logger.warning(f"Could not save parquet backup: {e}. Continuing with cloud synchronization.")
 
     project = get_hopsworks_project()
     if project is None:
