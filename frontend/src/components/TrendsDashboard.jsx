@@ -33,6 +33,53 @@ function WeatherIcon({ type, className = 'w-6 h-6 text-amber-400' }) {
   }
 }
 
+// Helper to accurately classify monthly AQI severity category and color styling
+function getSeasonalCategoryInfo(aqi) {
+  if (aqi <= 50) {
+    return {
+      label: 'Good (Clean)',
+      color: '#10b981',
+      badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      gradient: 'from-emerald-600 via-teal-400 to-sky-300',
+      glow: 'shadow-[0_0_14px_rgba(16,185,129,0.8)] ring-2 ring-emerald-400/50',
+    };
+  }
+  if (aqi <= 100) {
+    return {
+      label: 'Moderate',
+      color: '#fbbf24',
+      badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+      gradient: 'from-amber-600 via-yellow-400 to-orange-300',
+      glow: 'shadow-[0_0_14px_rgba(251,191,36,0.8)] ring-2 ring-amber-400/50',
+    };
+  }
+  if (aqi <= 150) {
+    return {
+      label: 'Unhealthy (SG)',
+      color: '#f97316',
+      badgeClass: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+      gradient: 'from-orange-600 via-orange-500 to-amber-400',
+      glow: 'shadow-[0_0_14px_rgba(249,115,22,0.8)] ring-2 ring-orange-400/50',
+    };
+  }
+  if (aqi <= 200) {
+    return {
+      label: 'Unhealthy',
+      color: '#f43f5e',
+      badgeClass: 'bg-rose-500/25 text-rose-300 border-rose-500/40',
+      gradient: 'from-rose-600 via-rose-500 to-orange-400',
+      glow: 'shadow-[0_0_14px_rgba(244,63,94,0.8)] ring-2 ring-rose-400/50',
+    };
+  }
+  return {
+    label: 'Severe Smog',
+    color: '#e11d48',
+    badgeClass: 'bg-rose-600/30 text-rose-200 border-rose-500/50',
+    gradient: 'from-purple-600 via-rose-600 to-orange-500',
+    glow: 'shadow-[0_0_16px_rgba(225,29,72,0.9)] ring-2 ring-rose-500/60',
+  };
+}
+
 export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
   const [activeTab, setActiveTab] = useState('3day');
   const [trendsData, setTrendsData] = useState(null);
@@ -334,7 +381,7 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
         {/* ------------------------------------------------------------- */}
         {/* CARD 2 (3 cols): 2-Year Seasonal Smog Pattern                */}
         {/* ------------------------------------------------------------- */}
-        <div className="lg:col-span-3 xl:col-span-3 rounded-2xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl relative overflow-hidden">
+        <div className="lg:col-span-3 xl:col-span-3 rounded-2xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl relative overflow-hidden h-full min-h-[340px]">
           {/* Header */}
           <div className="flex items-center justify-between pb-2 border-b border-white/5">
             <h3 className="text-sm font-semibold text-white tracking-wide">
@@ -349,7 +396,8 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
           <div className="relative flex items-end justify-between gap-1.5 h-44 pt-6 px-1 pb-1">
             {seasonalBars.map((bar, idx) => {
               const heightPct = bar.height ?? Math.min(100, Math.max(20, Math.round((bar.aqi / 220) * 100)));
-              const isPeak = bar.is_peak ?? bar.isPeak ?? false;
+              const aqiVal = bar.aqi || Math.round(heightPct * 2.2);
+              const catInfo = getSeasonalCategoryInfo(aqiVal);
               const fullMonth = FULL_MONTH_NAMES[bar.month] || bar.month;
               const isHovered = hoveredSeason?.month === bar.month;
 
@@ -361,29 +409,36 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
                     setHoveredSeason({
                       month: bar.month,
                       fullMonth,
-                      aqi: bar.aqi || Math.round(heightPct * 2.2),
-                      isPeak,
+                      aqi: aqiVal,
+                      catInfo,
                     })
                   }
                   onMouseLeave={() => setHoveredSeason(null)}
                 >
                   {/* Floating Mini Tooltip on Hover */}
                   {isHovered && (
-                    <div className="absolute -top-7 z-30 px-2 py-0.5 rounded-md bg-slate-900/95 border border-white/20 text-[10px] font-mono text-white shadow-xl whitespace-nowrap animate-fadeIn pointer-events-none">
-                      {bar.month} &bull; AQI {bar.aqi || Math.round(heightPct * 2.2)}
+                    <div
+                      className={`absolute -top-7.5 z-30 px-2 py-0.5 rounded-md bg-slate-900/95 border border-white/20 text-[10px] font-mono text-white shadow-xl whitespace-nowrap animate-fadeIn pointer-events-none ${
+                        idx === 0
+                          ? 'left-0 translate-x-0'
+                          : idx === seasonalBars.length - 1
+                          ? 'right-0 translate-x-0'
+                          : 'left-1/2 -translate-x-1/2'
+                      }`}
+                    >
+                      {bar.month} &bull; AQI {aqiVal}
                     </div>
                   )}
 
                   {/* Vertical Bar */}
                   <div
-                    className={`w-2.5 sm:w-3 rounded-full transition-all duration-300 ${
+                    className={`w-2.5 sm:w-3 rounded-full transition-all duration-200 ${
                       isHovered
-                        ? 'scale-y-105 scale-x-125 z-20 brightness-125 ' +
-                          (isPeak
-                            ? 'bg-gradient-to-t from-rose-500 via-rose-400 to-orange-300 shadow-[0_0_14px_rgba(244,63,94,0.8)] ring-2 ring-rose-400/50'
-                            : 'bg-gradient-to-t from-sky-400 via-teal-300 to-emerald-300 shadow-[0_0_12px_rgba(45,212,191,0.8)] ring-2 ring-teal-400/50')
-                        : isPeak
+                        ? `scale-x-125 z-20 brightness-125 bg-gradient-to-t ${catInfo.gradient} ${catInfo.glow}`
+                        : aqiVal >= 150
                         ? 'bg-gradient-to-t from-rose-600 via-rose-500 to-orange-400 shadow-[0_0_8px_rgba(244,63,94,0.45)]'
+                        : aqiVal >= 100
+                        ? 'bg-gradient-to-t from-amber-600 via-amber-500 to-yellow-400 shadow-[0_0_8px_rgba(251,191,36,0.35)]'
                         : 'bg-gradient-to-t from-slate-600 via-slate-400 to-slate-300 opacity-80'
                     }`}
                     style={{ height: `${heightPct}%` }}
@@ -393,28 +448,26 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
             })}
           </div>
 
-          {/* Interactive Bottom Readout Ribbon (Replaces the cramped static Jan-Dec letters) */}
-          <div className="mt-2 flex items-center justify-between pt-2 border-t border-white/5 text-[11px] font-mono select-none">
+          {/* Interactive Bottom Readout Ribbon - Fixed Height to completely eliminate layout shift */}
+          <div className="mt-2 h-8 flex items-center justify-between pt-2 border-t border-white/5 text-[11px] font-mono select-none overflow-hidden">
             {hoveredSeason ? (
               <div className="flex items-center justify-between w-full text-slate-200">
                 <span className="font-semibold text-white">{hoveredSeason.fullMonth}</span>
                 <span
-                  className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${
-                    hoveredSeason.isPeak
-                      ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40'
-                      : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
-                  }`}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${hoveredSeason.catInfo.badgeClass}`}
                 >
-                  {hoveredSeason.isPeak ? 'Peak Smog' : 'Clean'}
+                  {hoveredSeason.catInfo.label}
                 </span>
                 <span className="font-bold text-white font-mono">
                   ~{hoveredSeason.aqi} AQI
                 </span>
               </div>
             ) : (
-              <div className="flex items-center justify-between w-full text-slate-400 text-[10px]">
-                <span>Hover bar for month info</span>
-                <span className="text-rose-300/80 font-medium">Nov–Feb Smog Peak</span>
+              <div className="flex items-center justify-between w-full text-slate-400 text-[11px]">
+                <span>Hover bar for details</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300/90 border border-rose-500/30">
+                  Nov–Feb Peak
+                </span>
               </div>
             )}
           </div>
@@ -423,7 +476,7 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
         {/* ------------------------------------------------------------- */}
         {/* CARD 3 (3 cols): Dominant Pollutant WHO Guidelines             */}
         {/* ------------------------------------------------------------- */}
-        <div className="lg:col-span-3 xl:col-span-3 rounded-2xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl">
+        <div className="lg:col-span-3 xl:col-span-3 rounded-2xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between shadow-xl h-full min-h-[340px]">
           <div className="pb-2">
             <h3 className="text-sm font-semibold text-white tracking-wide">
               Dominant Pollutant
