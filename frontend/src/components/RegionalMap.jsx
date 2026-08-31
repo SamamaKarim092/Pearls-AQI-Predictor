@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { geoMercator, geoPath } from 'd3-geo';
 import pakistanGeoJson from '../data/pakistan_provinces.json';
+import RegionalMapSkeleton from './RegionalMapSkeleton';
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
@@ -241,14 +242,21 @@ export default function RegionalMap() {
   const khiY = chartHeight - (Math.min(khiVal, 220) / 220) * (chartHeight - 30) - 15;
   const lhrY = chartHeight - (Math.min(lhrVal, 220) / 220) * (chartHeight - 30) - 15;
 
+  if (loading && !data) {
+    return <RegionalMapSkeleton />;
+  }
+
   return (
-    <div className="w-full space-y-5 pb-8 animate-fadeIn select-none">
+    <div className="w-full space-y-5 pb-8 animate-data-enter select-none">
       {/* =========================================================================
           TOP NATIONAL SUMMARY HEADER BAR
          ========================================================================= */}
-      <div className="w-full rounded-2xl bg-[#091520]/85 border border-white/10 p-3.5 sm:p-4 backdrop-blur-xl shadow-xl flex flex-wrap items-center justify-between gap-4">
+      <div className="w-full rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:p-5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden flex flex-wrap items-center justify-between gap-4">
+        {/* Ambient Glass Glow */}
+        <div className="absolute -top-10 -right-10 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+
         {/* Left Title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-10">
           <div className="h-9 w-9 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-300 shadow-[0_0_15px_rgba(20,184,166,0.25)]">
             <Activity size={18} />
           </div>
@@ -263,9 +271,9 @@ export default function RegionalMap() {
         </div>
 
         {/* Right Summary Badges */}
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 relative z-10">
           {/* Cleanest City Pill Badge */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0d2229]/90 border border-emerald-500/40 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-emerald-500/40 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.15)]">
             <span className="text-xs text-slate-300 font-medium">
               Cleanest City: <strong className="text-white font-semibold">{national_summary.cleanest_city}</strong>
             </span>
@@ -275,7 +283,7 @@ export default function RegionalMap() {
           </div>
 
           {/* National Average Pill Badge */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0a1e27]/90 border border-teal-500/40 backdrop-blur-md shadow-[0_0_15px_rgba(20,184,166,0.2)]">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-teal-500/40 backdrop-blur-md shadow-[0_0_15px_rgba(20,184,166,0.15)]">
             <span className="text-xs text-slate-300 font-medium">
               National Average:
             </span>
@@ -285,7 +293,7 @@ export default function RegionalMap() {
           </div>
 
           {/* Most Polluted City Pill Badge */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#220d0f]/90 border border-rose-500/40 backdrop-blur-md shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-rose-500/40 backdrop-blur-md shadow-[0_0_15px_rgba(239,68,68,0.15)]">
             <span className="text-xs text-slate-300 font-medium">
               Most Polluted: <strong className="text-white font-semibold">{national_summary.most_polluted_city}</strong>
             </span>
@@ -298,7 +306,7 @@ export default function RegionalMap() {
           <button
             onClick={fetchData}
             disabled={loading}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-slate-300 hover:text-white hover:border-white/30 transition-all cursor-pointer"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-slate-300 hover:text-white hover:border-white/30 transition-all cursor-pointer shadow-sm"
             title="Refresh Live Regional Telemetry"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin text-teal-300' : ''} />
@@ -312,9 +320,9 @@ export default function RegionalMap() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         
         {/* ==================== LEFT: PAKISTAN GEOJSON ATMOSPHERIC MAP ==================== */}
-        <div className="lg:col-span-6 rounded-2xl bg-[#091520]/85 border border-white/10 p-4 backdrop-blur-xl shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[410px]">
+        <div className="lg:col-span-6 rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:p-5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.37)] flex flex-col justify-between relative overflow-hidden min-h-[410px]">
           {/* Subtle Ambient Radial Glow */}
-          <div className="absolute -top-20 -left-20 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-20 -left-20 w-80 h-80 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Map Top Header & Zoom Controls */}
@@ -334,7 +342,7 @@ export default function RegionalMap() {
           </div>
 
           {/* Interactive Map Visual Container */}
-          <div className="relative flex-1 flex items-center justify-center my-2 select-none overflow-hidden rounded-xl bg-[#06111a] border border-white/5 min-h-[330px]">
+          <div className="relative flex-1 flex items-center justify-center my-2 select-none overflow-hidden rounded-xl bg-slate-950/60 border border-white/10 backdrop-blur-md min-h-[330px]">
             
             {/* Zoom Controls Overlay (Top-Left) */}
             <div className="absolute top-3 left-3 z-30 flex flex-col rounded-lg bg-slate-900/90 border border-white/15 backdrop-blur-md overflow-hidden shadow-lg">
@@ -606,10 +614,12 @@ export default function RegionalMap() {
         </div>
 
         {/* ==================== RIGHT: REGIONAL COMPARISON TABLE ==================== */}
-        <div className="lg:col-span-6 rounded-2xl bg-[#091520]/85 border border-white/10 p-4 sm:p-5 backdrop-blur-xl shadow-xl flex flex-col justify-between min-h-[380px]">
+        <div className="lg:col-span-6 rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:p-5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.37)] flex flex-col justify-between relative overflow-hidden min-h-[380px]">
+          {/* Ambient Glass Glow */}
+          <div className="absolute top-0 right-0 w-72 h-72 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
           
           {/* Table Header Row */}
-          <div>
+          <div className="relative z-10">
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
               <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Live City Air Quality Rankings
@@ -638,16 +648,16 @@ export default function RegionalMap() {
                 const isUnhealthy = c.health_status === 'Unhealthy';
 
                 const borderColor = isGood
-                  ? 'border-emerald-500/60'
+                  ? 'border-emerald-500/50'
                   : isMod
-                  ? 'border-amber-500/60'
-                  : 'border-rose-500/60';
+                  ? 'border-amber-500/50'
+                  : 'border-rose-500/50';
 
                 const bgColor = isGood
-                  ? 'bg-emerald-950/20 hover:bg-emerald-950/35'
+                  ? 'bg-slate-900/60 hover:bg-slate-800/60'
                   : isMod
-                  ? 'bg-amber-950/20 hover:bg-amber-950/35'
-                  : 'bg-rose-950/20 hover:bg-rose-950/35';
+                  ? 'bg-slate-900/60 hover:bg-slate-800/60'
+                  : 'bg-slate-900/60 hover:bg-slate-800/60';
 
                 const glowShadow = isGood
                   ? 'shadow-[0_0_20px_rgba(16,185,129,0.15)]'
@@ -734,7 +744,9 @@ export default function RegionalMap() {
       {/* =========================================================================
           BOTTOM PANEL: 24-HOUR DIURNAL MULTI-CITY AQI TIME-SERIES CHART
          ========================================================================= */}
-      <div className="w-full rounded-2xl bg-[#091520]/85 border border-white/10 p-5 backdrop-blur-xl shadow-xl space-y-3">
+      <div className="w-full rounded-2xl border border-white/10 bg-slate-900/40 p-5 sm:p-6 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden space-y-3">
+        {/* Ambient Glow */}
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/15 to-amber-500/10 blur-3xl pointer-events-none" />
         
         {/* Chart Header & Legend */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
@@ -772,9 +784,13 @@ export default function RegionalMap() {
         <div
           ref={chartRef}
           onMouseMove={handleChartMouseMove}
-          className="relative w-full h-[220px] bg-[#050e16]/80 rounded-xl border border-white/5 p-2 overflow-visible select-none cursor-crosshair"
+          className="relative w-full h-[220px] bg-slate-950/60 rounded-xl border border-white/10 backdrop-blur-md overflow-hidden select-none cursor-crosshair"
         >
-          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full overflow-visible">
+          <svg
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            preserveAspectRatio="none"
+            className="w-full h-full overflow-visible"
+          >
             <defs>
               {/* Curve Glow Filters */}
               <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
@@ -820,7 +836,7 @@ export default function RegionalMap() {
                   opacity="0.6"
                 />
                 <text
-                  x="6"
+                  x="8"
                   y={grid.y - 4}
                   fontSize="10"
                   fontFamily="monospace"
@@ -872,32 +888,32 @@ export default function RegionalMap() {
                 {/* Vertical Cursor Line */}
                 <line
                   x1={activeX}
-                  y1="10"
+                  y1="5"
                   x2={activeX}
                   y2={chartHeight}
                   stroke="#ffffff"
                   strokeWidth="1.5"
                   strokeDasharray="3 3"
-                  opacity="0.7"
+                  opacity="0.75"
                 />
                 {/* Islamabad Dot */}
-                <circle cx={activeX} cy={isbY} r="5" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                <circle cx={activeX} cy={isbY} r="5" fill="#10b981" stroke="#ffffff" strokeWidth="2" filter="url(#emeraldGlow)" />
                 {/* Karachi Dot */}
-                <circle cx={activeX} cy={khiY} r="5" fill="#fbbf24" stroke="#ffffff" strokeWidth="2" />
+                <circle cx={activeX} cy={khiY} r="5" fill="#fbbf24" stroke="#ffffff" strokeWidth="2" filter="url(#amberGlow)" />
                 {/* Lahore Dot */}
-                <circle cx={activeX} cy={lhrY} r="5.5" fill="#f43f5e" stroke="#ffffff" strokeWidth="2" />
+                <circle cx={activeX} cy={lhrY} r="5.5" fill="#f43f5e" stroke="#ffffff" strokeWidth="2" filter="url(#roseGlow)" />
               </g>
             )}
           </svg>
 
-          {/* Interactive Floating Synchronized Tooltip */}
+          {/* Interactive Floating Synchronized Tooltip - Cleanly positioned inside top without colliding with header */}
           {hoveredIndex !== null && (
             <div
               style={{
-                left: `${(hoveredIndex / (time_labels.length - 1)) * 100}%`,
-                top: '-15px',
+                left: `${Math.max(12, Math.min(88, (hoveredIndex / (time_labels.length - 1)) * 100))}%`,
+                top: '10px',
               }}
-              className="absolute -translate-x-1/2 -translate-y-full z-30 pointer-events-none rounded-xl bg-[#040e17]/95 border border-white/20 p-2.5 shadow-2xl backdrop-blur-md min-w-[170px]"
+              className="absolute -translate-x-1/2 z-30 pointer-events-none rounded-xl bg-slate-900/95 border border-white/20 p-2.5 shadow-2xl backdrop-blur-xl min-w-[175px]"
             >
               <div className="text-[11px] font-mono text-slate-300 font-bold border-b border-white/10 pb-1 mb-1.5 flex items-center justify-between">
                 <span>Time: {time_labels[hoveredIndex]}</span>
@@ -930,18 +946,30 @@ export default function RegionalMap() {
           )}
         </div>
 
-        {/* X-Axis Timeline Labels */}
-        <div className="flex items-center justify-between px-2 text-[11px] font-mono font-semibold text-slate-400">
-          {time_labels.map((t, idx) => (
-            <span
-              key={t}
-              className={`transition-colors ${
-                hoveredIndex === idx ? 'text-teal-300 font-bold underline' : ''
-              }`}
-            >
-              {t}
-            </span>
-          ))}
+        {/* X-Axis Timeline Labels - Exact 1-to-1 percentage aligned with SVG coordinate columns */}
+        <div className="relative w-full h-6 select-none mt-1">
+          {time_labels.map((t, idx) => {
+            const leftPercent = (idx / (time_labels.length - 1)) * 100;
+            const isHovered = hoveredIndex === idx;
+            return (
+              <span
+                key={t}
+                onClick={() => setHoveredIndex(idx)}
+                style={{ left: `${leftPercent}%` }}
+                className={`absolute top-0 text-[11px] font-mono font-semibold transition-all duration-150 cursor-pointer ${
+                  isHovered
+                    ? 'text-teal-300 font-bold scale-110 -translate-x-1/2 drop-shadow-[0_0_8px_rgba(20,184,166,0.8)]'
+                    : idx === 0
+                    ? 'text-slate-400 translate-x-0'
+                    : idx === time_labels.length - 1
+                    ? 'text-slate-400 -translate-x-full'
+                    : 'text-slate-400 -translate-x-1/2'
+                }`}
+              >
+                {t}
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>
