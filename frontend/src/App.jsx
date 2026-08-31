@@ -7,6 +7,8 @@ import PollutantBars from './components/PollutantBars';
 import TrendsDashboard from './components/TrendsDashboard';
 import ShapLab from './components/ShapLab';
 import ModelTournament from './components/ModelTournament';
+import RegionalMap from './components/RegionalMap';
+import OverviewSkeleton from './components/OverviewSkeleton';
 import Aurora from './components/Aurora';
 import {
   Bell,
@@ -15,131 +17,19 @@ import {
   Trophy,
   TrendingUp,
   Sliders,
+  MapPin,
   ChevronDown,
   Sparkles,
 } from 'lucide-react';
 
 const CITIES = ['Karachi', 'Lahore', 'Islamabad'];
 
-// Static baseline fallback for initial render or offline mode
-const CITY_BASELINES = {
-  Karachi: {
-    city: 'Karachi',
-    aqi: 68,
-    category: 'Moderate',
-    color: '#fbbf24',
-    pm2_5: 23.9,
-    pm10: 52.0,
-    nitrogen_dioxide: 14.0,
-    sulphur_dioxide: 7.0,
-    ozone: 18.0,
-    temperature_2m: 29.5,
-    wind_speed_10m: 19.2,
-    relative_humidity_2m: 71.0,
-    cigarettes_per_day: 1.1,
-    lifestyle_actions: [
-      { id: 'mask', label: 'Wear N95 Mask', active: false, icon: 'mask' },
-      { id: 'air_purifier', label: 'Air Purifier ON', active: false, icon: 'air_purifier' },
-      { id: 'exercise', label: 'Outdoor Exercise OK', active: true, icon: 'exercise' },
-      { id: 'windows', label: 'Open Windows OK', active: true, icon: 'windows' },
-    ],
-  },
-  Lahore: {
-    city: 'Lahore',
-    aqi: 151,
-    category: 'Unhealthy',
-    color: '#ef4444',
-    pm2_5: 60.3,
-    pm10: 132.0,
-    nitrogen_dioxide: 28.0,
-    sulphur_dioxide: 14.0,
-    ozone: 24.0,
-    temperature_2m: 34.9,
-    wind_speed_10m: 2.8,
-    relative_humidity_2m: 56.0,
-    cigarettes_per_day: 2.7,
-    lifestyle_actions: [
-      { id: 'mask', label: 'Wear N95 Mask', active: true, icon: 'mask' },
-      { id: 'air_purifier', label: 'Air Purifier ON', active: true, icon: 'air_purifier' },
-      { id: 'exercise', label: 'Avoid Heavy Exercise', active: true, icon: 'exercise' },
-      { id: 'windows', label: 'Keep Windows Closed', active: true, icon: 'windows' },
-    ],
-  },
-  Islamabad: {
-    city: 'Islamabad',
-    aqi: 124,
-    category: 'Unhealthy',
-    color: '#f97316',
-    pm2_5: 33.9,
-    pm10: 75.0,
-    nitrogen_dioxide: 15.0,
-    sulphur_dioxide: 8.0,
-    ozone: 20.0,
-    temperature_2m: 32.2,
-    wind_speed_10m: 4.1,
-    relative_humidity_2m: 58.0,
-    cigarettes_per_day: 1.5,
-    lifestyle_actions: [
-      { id: 'mask', label: 'Wear N95 Mask', active: false, icon: 'mask' },
-      { id: 'air_purifier', label: 'Air Purifier ON', active: false, icon: 'air_purifier' },
-      { id: 'exercise', label: 'Outdoor Exercise OK', active: true, icon: 'exercise' },
-      { id: 'windows', label: 'Open Windows OK', active: true, icon: 'windows' },
-    ],
-  },
-};
-
-function generateFallbackTimeline(city) {
-  const base = CITY_BASELINES[city] || CITY_BASELINES.Karachi;
-  return Array.from({ length: 49 }, (_, i) => {
-    const hours = i - 24;
-    const pm25 = parseFloat(
-      Math.max(5, base.pm2_5 + Math.sin(i / 3) * 6 + (hours > 0 ? hours * 0.2 : 0)).toFixed(1)
-    );
-    const aqi = Math.round(pm25 * 3.4);
-    let cat = 'Good';
-    let color = '#10b981';
-    if (aqi > 150) {
-      cat = 'Unhealthy';
-      color = '#ef4444';
-    } else if (aqi > 100) {
-      cat = 'Unhealthy';
-      color = '#f97316';
-    } else if (aqi > 50) {
-      cat = 'Moderate';
-      color = '#fbbf24';
-    }
-    return {
-      hour_offset: hours,
-      time_display: hours === 0 ? 'Live (Now)' : `${hours > 0 ? '+' : ''}${hours}h`,
-      formatted_time: `${hours === 0 ? 'Live (Now)' : `${hours > 0 ? '+' : ''}${hours}h`}`,
-      pm2_5: pm25,
-      aqi: aqi,
-      category: cat,
-      color: color,
-      pm10: parseFloat((pm25 * 2.2).toFixed(1)),
-      nitrogen_dioxide: parseFloat((base.nitrogen_dioxide + Math.cos(i / 5) * 1.5).toFixed(1)),
-      sulphur_dioxide: base.sulphur_dioxide,
-      ozone: base.ozone,
-      temperature_2m: base.temperature_2m,
-      wind_speed_10m: base.wind_speed_10m,
-      relative_humidity_2m: base.relative_humidity_2m,
-      cigarettes_per_day: parseFloat((pm25 / 22.0).toFixed(1)),
-      lifestyle_actions: base.lifestyle_actions,
-    };
-  });
-}
-
 export default function App() {
-  const [activePage, setActivePage] = useState('tournament'); // 'tournament' | 'live' | 'trends' | 'shap'
+  const [activePage, setActivePage] = useState('live'); // 'live' | 'trends' | 'shap' | 'tournament' | 'regional'
   const [selectedCity, setSelectedCity] = useState('Karachi');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [scrubberIndex, setScrubberIndex] = useState(24);
-  const [data, setData] = useState(() => ({
-    city: 'Karachi',
-    current_index: 24,
-    current: CITY_BASELINES.Karachi,
-    timeline: generateFallbackTimeline('Karachi'),
-  }));
+  const [data, setData] = useState(null);
 
   // Fetch forecast data from FastAPI backend with seamless local fallback
   useEffect(() => {
@@ -160,16 +50,7 @@ export default function App() {
         }
       })
       .catch((err) => {
-        console.warn(`FastAPI unavailable for ${selectedCity}, using city profile fallback:`, err);
-        if (!isCancelled) {
-          setData({
-            city: selectedCity,
-            current_index: 24,
-            current: CITY_BASELINES[selectedCity] || CITY_BASELINES.Karachi,
-            timeline: generateFallbackTimeline(selectedCity),
-          });
-          setScrubberIndex(24);
-        }
+        console.warn(`FastAPI unavailable for ${selectedCity}:`, err);
       })
       .finally(() => {
         if (!isCancelled) setLoading(false);
@@ -182,7 +63,7 @@ export default function App() {
 
   const activeItem = data?.timeline && data.timeline[scrubberIndex]
     ? data.timeline[scrubberIndex]
-    : data?.current || CITY_BASELINES[selectedCity];
+    : data?.current || null;
 
   return (
     <div className="relative min-h-screen w-full bg-[#050b14] text-white overflow-hidden font-sans">
@@ -213,6 +94,7 @@ export default function App() {
 
           {/* Center Navigation Tabs */}
           <div className="flex items-center bg-slate-900/80 p-1 rounded-xl border border-white/10 backdrop-blur-md shadow-lg">
+            {/* 1st: Overview */}
             <button
               onClick={() => setActivePage('live')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
@@ -225,18 +107,7 @@ export default function App() {
               <span>Overview</span>
             </button>
 
-            <button
-              onClick={() => setActivePage('tournament')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                activePage === 'tournament'
-                  ? 'bg-teal-500/25 text-teal-300 border border-teal-500/40 shadow-[0_0_12px_rgba(20,184,166,0.3)]'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Trophy size={13} />
-              <span>Model Tournament</span>
-            </button>
-
+            {/* 2nd: Analytics */}
             <button
               onClick={() => setActivePage('trends')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
@@ -249,6 +120,7 @@ export default function App() {
               <span>Analytics</span>
             </button>
 
+            {/* 3rd: What-If Lab */}
             <button
               onClick={() => setActivePage('shap')}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
@@ -259,6 +131,32 @@ export default function App() {
             >
               <Sliders size={13} />
               <span>What-If Lab</span>
+            </button>
+
+            {/* 4th: Model Tournament */}
+            <button
+              onClick={() => setActivePage('tournament')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                activePage === 'tournament'
+                  ? 'bg-teal-500/25 text-teal-300 border border-teal-500/40 shadow-[0_0_12px_rgba(20,184,166,0.3)]'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Trophy size={13} />
+              <span>Model Tournament</span>
+            </button>
+
+            {/* 5th: Regional Map */}
+            <button
+              onClick={() => setActivePage('regional')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                activePage === 'regional'
+                  ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.3)]'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <MapPin size={13} />
+              <span>Regional Map</span>
             </button>
           </div>
 
@@ -298,60 +196,74 @@ export default function App() {
 
         {/* Main Content Layout (Conditional Page Rendering) */}
         <main className="flex-1 py-4">
-          {activePage === 'tournament' ? (
+          {activePage === 'regional' ? (
+            /* ==================== PAGE 4: REGIONAL MAP & MULTI-CITY INTELLIGENCE ==================== */
+            <RegionalMap />
+          ) : activePage === 'tournament' ? (
             /* ==================== PAGE 0: MODEL TOURNAMENT & MLOPS LEADERBOARD ==================== */
             <ModelTournament selectedCity={selectedCity} />
           ) : activePage === 'live' ? (
             /* ==================== PAGE 1: REAL-TIME LIVE MONITOR / OVERVIEW ==================== */
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-white mb-5 drop-shadow-sm flex items-center justify-between">
-                <span>Air Quality Dashboard</span>
-                <span className="text-sm font-normal text-slate-400 font-mono">
-                  {activeItem.time_display === 'Live (Now)' ? '● Live Sensor Feed' : activeItem.time_display}
-                </span>
-              </h1>
+            loading || !data || !data.current || !activeItem ? (
+              <OverviewSkeleton selectedCity={selectedCity} />
+            ) : (
+              <div className="animate-data-enter">
+                <h1 className="text-3xl font-semibold tracking-tight text-white mb-5 drop-shadow-sm flex items-center justify-between">
+                  <span>Air Quality Dashboard</span>
+                  {activeItem.time_display === 'Live (Now)' ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-xs font-semibold text-emerald-400 font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)]">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                      Live Sensor Feed
+                    </span>
+                  ) : (
+                    <span className="text-sm font-medium text-slate-400 font-mono px-3 py-1 rounded-lg bg-slate-900/60 border border-white/10">
+                      {activeItem.time_display}
+                    </span>
+                  )}
+                </h1>
 
-              {/* 3-Column Main Hero Bento Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
-                {/* Column 1: Concentric Activity Rings */}
-                <div>
-                  <ConcentricRings current={activeItem} />
+                {/* 3-Column Main Hero Bento Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+                  {/* Column 1: Concentric Activity Rings */}
+                  <div>
+                    <ConcentricRings current={activeItem} />
+                  </div>
+
+                  {/* Column 2: Cigarette Equivalent Card */}
+                  <div>
+                    <CigaretteCard
+                      cigarettes={activeItem.cigarettes_per_day}
+                      pm25={activeItem.pm2_5}
+                    />
+                  </div>
+
+                  {/* Column 3: 2x2 Lifestyle Action Cards */}
+                  <div>
+                    <LifestyleGrid actions={activeItem.lifestyle_actions} />
+                  </div>
                 </div>
 
-                {/* Column 2: Cigarette Equivalent Card */}
-                <div>
-                  <CigaretteCard
-                    cigarettes={activeItem.cigarettes_per_day}
-                    pm25={activeItem.pm2_5}
-                  />
-                </div>
+                {/* Bottom Controls Row: Timeline Scrubber & Pollutant Guideline Bars */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5 items-stretch">
+                  {/* Left Side: Time-Travel Scrubber */}
+                  <div>
+                    <TimeTravelScrubber
+                      timeline={data.timeline}
+                      currentIndex={scrubberIndex}
+                      onChangeIndex={setScrubberIndex}
+                      selectedCity={selectedCity}
+                      onSelectCity={setSelectedCity}
+                      cities={CITIES}
+                    />
+                  </div>
 
-                {/* Column 3: 2x2 Lifestyle Action Cards */}
-                <div>
-                  <LifestyleGrid actions={activeItem.lifestyle_actions} />
+                  {/* Right Side: WHO Pollutant Guideline Bars */}
+                  <div>
+                    <PollutantBars current={activeItem} />
+                  </div>
                 </div>
               </div>
-
-              {/* Bottom Controls Row: Timeline Scrubber & Pollutant Guideline Bars */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5 items-stretch">
-                {/* Left Side: Time-Travel Scrubber */}
-                <div>
-                  <TimeTravelScrubber
-                    timeline={data.timeline}
-                    currentIndex={scrubberIndex}
-                    onChangeIndex={setScrubberIndex}
-                    selectedCity={selectedCity}
-                    onSelectCity={setSelectedCity}
-                    cities={CITIES}
-                  />
-                </div>
-
-                {/* Right Side: WHO Pollutant Guideline Bars */}
-                <div>
-                  <PollutantBars current={activeItem} />
-                </div>
-              </div>
-            </div>
+            )
           ) : activePage === 'trends' ? (
             /* ==================== PAGE 2: 7-DAY & 3-DAY TREND INTELLIGENCE / ANALYTICS ==================== */
             <div>
@@ -365,10 +277,18 @@ export default function App() {
           )}
         </main>
 
-        {/* Footer */}
-        <footer className="py-3 text-center text-xs text-slate-400 flex items-center justify-between border-t border-white/5 mt-4">
-          <span>Pearls AQI Predictor &bull; Enterprise Atmospheric ML Intelligence</span>
-          <span className="text-emerald-400/80 font-mono text-[11px]">Backend API: Online (Port 8000)</span>
+        {/* Enhanced Footer */}
+        <footer className="mt-12 mb-4 pt-6 pb-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 select-none">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="font-semibold text-slate-200">Pearls AQI Predictor</span>
+            <span className="text-slate-600 hidden sm:inline">&bull;</span>
+            <span className="text-slate-400">Enterprise Atmospheric ML Intelligence</span>
+          </div>
+
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-white/10 backdrop-blur-md shadow-sm">
+            <span className="text-slate-400 text-[11px]">Created by</span>
+            <span className="font-bold text-teal-300 tracking-tight">Samama Karim</span>
+          </div>
         </footer>
       </div>
     </div>
