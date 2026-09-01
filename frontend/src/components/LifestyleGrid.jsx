@@ -33,14 +33,14 @@ export default function LifestyleGrid({ actions }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3.5 w-full h-full min-h-[310px]">
+    <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 w-full h-full min-h-[260px] sm:min-h-[310px]">
       {cards.map((card) => (
         <div
           key={card.id}
-          className="flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-slate-900/40 p-4 text-center backdrop-blur-md transition-all duration-300 hover:border-white/25 hover:bg-slate-900/60 group cursor-default select-none shadow-sm"
+          className="flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-slate-900/40 p-3 sm:p-4 text-center backdrop-blur-md transition-all duration-300 hover:border-white/25 hover:bg-slate-900/60 group cursor-default select-none shadow-sm"
         >
           {/* SVG Icon Container */}
-          <div className="flex h-16 w-16 items-center justify-center transition-all duration-300 group-hover:scale-105">
+          <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center transition-all duration-300 group-hover:scale-105">
             <img
               src={card.src}
               alt={card.alt}
