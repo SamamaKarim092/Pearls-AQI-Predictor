@@ -88,15 +88,15 @@ export default function DiurnalGithubHeatmap({ activeTab = '3day', dailyCards = 
   };
 
   return (
-    <div className="flex flex-col justify-between w-full h-full min-h-[290px] rounded-2xl border border-white/10 bg-slate-900/60 p-5 backdrop-blur-md shadow-xl select-none overflow-hidden">
+    <div className="flex flex-col justify-between w-full h-full min-h-[280px] sm:min-h-[290px] rounded-2xl border border-white/10 bg-slate-900/60 p-3.5 sm:p-5 backdrop-blur-md shadow-xl select-none overflow-hidden">
       {/* Top Header + GitHub-style Legend */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between border-b border-white/10 pb-3 gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <Activity size={16} className="text-emerald-400" />
-          <h3 className="text-sm font-semibold text-white tracking-wide">
+          <h3 className="text-xs sm:text-sm font-semibold text-white tracking-wide">
             24-Hour Diurnal Rush-Hour Heatmap
           </h3>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800/80 border border-white/10 text-teal-300">
+          <span className="text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800/80 border border-white/10 text-teal-300">
             {activeTab === '3day' ? 'Today + 3 Days' : 'Today + 6 Days'}
           </span>
           <button
@@ -109,13 +109,13 @@ export default function DiurnalGithubHeatmap({ activeTab = '3day', dailyCards = 
         </div>
 
         {/* GitHub-style Clean <-> Smog Legend */}
-        <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-300">
+        <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono text-slate-300">
           <span className="text-[10px] text-sky-300 font-medium">Clean</span>
           <div className="flex items-center gap-1">
             {INTENSITY_COLORS.map((item, idx) => (
               <span
                 key={idx}
-                className={`w-3 h-3 rounded-[3px] border border-white/10 shadow-sm ${item.bg}`}
+                className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[3px] border border-white/10 shadow-sm ${item.bg}`}
                 title={item.text}
               />
             ))}
@@ -125,7 +125,7 @@ export default function DiurnalGithubHeatmap({ activeTab = '3day', dailyCards = 
       </div>
 
       {/* GitHub Day-Rows x 24-Column (Hours) Grid Container */}
-      <div className="pt-3 overflow-x-auto no-scrollbar p-1">
+      <div className="pt-3 overflow-x-auto no-scrollbar touch-pan-x p-1 scroll-smooth">
         <div className="min-w-[440px]">
           {/* Top X-Axis 4 Time Milestone Headers */}
           <div className="grid grid-cols-[44px_repeat(24,1fr)] gap-[3px] text-[10px] font-mono text-slate-400 pb-1.5 select-none">
