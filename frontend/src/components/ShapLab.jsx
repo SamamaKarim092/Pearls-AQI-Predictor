@@ -568,16 +568,6 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                     <stop offset="70%" stopColor="#f97316" />
                     <stop offset="100%" stopColor="#ef4444" />
                   </linearGradient>
-
-                  {/* Soft subtle glow on the active arc */}
-                  <filter id="gauge-arc-glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3.5" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-
-                  <filter id="needle-tip-glow">
-                    <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="rgba(255,255,255,0.95)" />
-                  </filter>
                 </defs>
 
                 {/* Background Dim Base Arc */}
@@ -596,14 +586,18 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                   stroke="url(#gauge-arc-gradient)"
                   strokeWidth="15"
                   strokeLinecap="round"
-                  filter="url(#gauge-arc-glow)"
                   className={isSimulating ? 'opacity-50' : 'opacity-100'}
+                  style={{
+                    transition: 'opacity 0.2s ease',
+                    filter: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.35))',
+                  }}
                 />
 
-                {/* Sleek Solid White Pointer Needle */}
+                {/* Indicator Gauge Needle */}
                 <g
                   transform={`rotate(${needleAngle}, 110, 110)`}
                   className={`transition-transform duration-500 ease-out ${isSimulating ? 'opacity-30' : 'opacity-100'}`}
+                  style={{ willChange: 'transform' }}
                 >
                   <line
                     x1="130"
@@ -613,7 +607,6 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                     stroke="#ffffff"
                     strokeWidth="3.5"
                     strokeLinecap="round"
-                    filter="url(#needle-tip-glow)"
                     className="drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]"
                   />
                 </g>

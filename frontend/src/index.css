@@ -309,84 +309,73 @@ input[type="range"].slider-blue::-moz-range-thumb {
 }
 
 /* ==========================================================================
-   Model Tournament Podium & Card Entrance Animations
+   Model Tournament Podium & Card Entrance Animations (GPU Accelerated)
    ========================================================================== */
 @keyframes podium-rise-gold {
   0% {
     opacity: 0;
-    transform: translateY(90px) scale(0.88);
-    filter: blur(8px);
+    transform: translate3d(0, 70px, 0) scale(0.92);
   }
   60% {
     opacity: 1;
-    transform: translateY(-8px) scale(1.02);
-    filter: blur(0px);
+    transform: translate3d(0, -6px, 0) scale(1.015);
   }
   80% {
-    transform: translateY(3px) scale(0.995);
+    transform: translate3d(0, 2px, 0) scale(0.998);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
 @keyframes podium-rise-silver {
   0% {
     opacity: 0;
-    transform: translateY(80px) scale(0.9);
-    filter: blur(6px);
+    transform: translate3d(0, 60px, 0) scale(0.94);
   }
   65% {
     opacity: 1;
-    transform: translateY(-5px) scale(1.01);
-    filter: blur(0px);
+    transform: translate3d(0, -4px, 0) scale(1.01);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
 @keyframes podium-rise-bronze {
   0% {
     opacity: 0;
-    transform: translateY(80px) scale(0.9);
-    filter: blur(6px);
+    transform: translate3d(0, 60px, 0) scale(0.94);
   }
   65% {
     opacity: 1;
-    transform: translateY(-5px) scale(1.01);
-    filter: blur(0px);
+    transform: translate3d(0, -4px, 0) scale(1.01);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
 @keyframes card-rise-smooth {
   0% {
     opacity: 0;
-    transform: translateY(40px);
-    filter: blur(5px);
+    transform: translate3d(0, 25px, 0);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
-    filter: blur(0px);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes float-gentle {
   0%, 100% {
-    transform: translateY(0px);
+    transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: translateY(-7px);
+    transform: translate3d(0, -6px, 0);
   }
 }
 
@@ -400,39 +389,57 @@ input[type="range"].slider-blue::-moz-range-thumb {
 }
 
 .animate-podium-gold {
-  animation: podium-rise-gold 1.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: podium-rise-gold 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-podium-silver {
-  animation: podium-rise-silver 1.25s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
+  animation: podium-rise-silver 0.88s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-podium-bronze {
-  animation: podium-rise-bronze 1.25s cubic-bezier(0.16, 1, 0.3, 1) 0.30s both;
+  animation: podium-rise-bronze 0.88s cubic-bezier(0.16, 1, 0.3, 1) 0.20s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-card-rise-1 {
-  animation: card-rise-smooth 1.05s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+  animation: card-rise-smooth 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.30s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-card-rise-2 {
-  animation: card-rise-smooth 1.05s cubic-bezier(0.16, 1, 0.3, 1) 0.58s both;
+  animation: card-rise-smooth 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-telemetry-stagger-1 {
-  animation: card-rise-smooth 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.70s both;
+  animation: card-rise-smooth 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-telemetry-stagger-2 {
-  animation: card-rise-smooth 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.80s both;
+  animation: card-rise-smooth 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.52s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-telemetry-stagger-3 {
-  animation: card-rise-smooth 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.90s both;
+  animation: card-rise-smooth 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.58s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-telemetry-stagger-4 {
-  animation: card-rise-smooth 0.95s cubic-bezier(0.16, 1, 0.3, 1) 1.00s both;
+  animation: card-rise-smooth 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.64s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .animate-gold-card-float {

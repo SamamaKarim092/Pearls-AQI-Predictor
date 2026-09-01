@@ -306,11 +306,6 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
                 <stop offset="60%" stopColor="#14b8a6" stopOpacity="0.10" />
                 <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
               </linearGradient>
-
-              <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="4" result="glow" />
-                <feComposite in="SourceGraphic" in2="glow" operator="over" />
-              </filter>
             </defs>
 
             {/* Grid Guidelines */}
@@ -327,8 +322,8 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
               strokeWidth="3.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              filter="url(#neon-glow)"
-              className="drop-shadow-[0_0_12px_rgba(45,212,191,0.6)]"
+              className="drop-shadow-[0_0_10px_rgba(45,212,191,0.55)] transition-all duration-300"
+              style={{ willChange: 'd' }}
             />
           </svg>
         </div>

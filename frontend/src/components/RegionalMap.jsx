@@ -380,15 +380,6 @@ export default function RegionalMap() {
                     <stop offset="100%" stopColor="#071520" />
                   </linearGradient>
 
-                  {/* Neon Cyan Border Glow Filter */}
-                  <filter id="neonCyanGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="2.5" result="glow" />
-                    <feMerge>
-                      <feMergeNode in="glow" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-
                   {/* Wind Arrow Marker */}
                   <marker id="windArrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
                     <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8" opacity="0.8" />
@@ -406,7 +397,7 @@ export default function RegionalMap() {
                 </g>
 
                 {/* Official Pakistan Province Boundary Paths (Projected from GeoJSON) */}
-                <g filter="url(#neonCyanGlow)">
+                <g style={{ filter: 'drop-shadow(0 0 6px rgba(0, 245, 196, 0.45))' }}>
                   {provincePaths.map((prov) => (
                     <path
                       key={prov.id}
@@ -790,31 +781,6 @@ export default function RegionalMap() {
             preserveAspectRatio="none"
             className="w-full h-full overflow-visible"
           >
-            <defs>
-              {/* Curve Glow Filters */}
-              <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <filter id="amberGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <filter id="roseGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
             {/* Horizontal Grid Lines & Y-Axis Labels */}
             {[
               { val: '200+', y: 15 },
@@ -855,7 +821,7 @@ export default function RegionalMap() {
               stroke="#10b981"
               strokeWidth="3"
               strokeLinecap="round"
-              filter="url(#emeraldGlow)"
+              style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' }}
               opacity="0.95"
             />
 
@@ -866,7 +832,7 @@ export default function RegionalMap() {
               stroke="#fbbf24"
               strokeWidth="3.2"
               strokeLinecap="round"
-              filter="url(#amberGlow)"
+              style={{ filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))' }}
               opacity="0.95"
             />
 
@@ -877,7 +843,7 @@ export default function RegionalMap() {
               stroke="#f43f5e"
               strokeWidth="3.5"
               strokeLinecap="round"
-              filter="url(#roseGlow)"
+              style={{ filter: 'drop-shadow(0 0 8px rgba(244, 63, 94, 0.65))' }}
               opacity="0.98"
             />
 

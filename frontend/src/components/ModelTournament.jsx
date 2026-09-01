@@ -87,7 +87,7 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
   }, []);
 
   return (
-    <div className="w-full space-y-7 pb-8 animate-fadeIn">
+    <div className="w-full space-y-7 pb-8 animate-data-enter">
       {/* Top Main Heading */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-semibold tracking-tight text-white drop-shadow-sm flex items-center gap-2.5">
