@@ -149,47 +149,70 @@ npm run dev
 
 ```
 Pearls-AQI-Predictor/
-├── .github/workflows/
-│   └── feature_pipeline.yml         # Hourly automated GitHub Actions serverless cron
+├── .github/
+│   └── workflows/
+│       └── feature_pipeline.yml         # Hourly automated GitHub Actions serverless cron
 ├── assets/
-│   ├── reports/                     # 📊 Infographics used in report & readme
-│   └── designs/                     # 🎨 UI & Dashboard design snapshots
-├── frontend/                        # ⚛️ React 19 + Vite Nordic Slate Web Dashboard
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ConcentricRings.jsx  # ⭕ SVG Concentric Activity Rings
-│   │   │   ├── CigaretteCard.jsx    # 🚬 Berkeley Earth Cigarette metric & ember
-│   │   │   ├── LifestyleGrid.jsx    # 🏃 2x2 Action Tiles (Cardio, Windows, etc.)
-│   │   │   ├── TimeTravelScrubber.jsx # ⏱️ 49h Timeline Scrubber bar
-│   │   │   ├── PollutantBars.jsx    # 📊 WHO safety guideline progress bars
-│   │   │   ├── TrendsDashboard.jsx  # 📈 7-Day cards & Diurnal Heatmap
-│   │   │   ├── ShapLab.jsx          # 🎛️ Interactive SHAP What-If Sliders
-│   │   │   ├── ModelTournament.jsx  # 🏆 3D Podium & 4-Fold CV Leaderboard
-│   │   │   ├── RegionalMap.jsx      # 🗺️ D3 GeoJSON Pakistan Regional Map
-│   │   │   └── Aurora.jsx           # 🌌 WebGL Aurora Background Canvas
-│   │   ├── App.jsx                  # Main dashboard coordinator
-│   │   └── config.js                # API base URL configuration
-├── notes/                           # 📓 Obsidian Knowledge Vault
-│   ├── 00-Index.md                  # Master interactive knowledge map
-│   ├── 01-architecture/             # Serverless stack, Feature store, FastAPI bridge
-│   ├── 02-data-pipeline/            # Data ingestion, Lags/Rolling, Hopsworks
-│   ├── 03-machine-learning/         # Tournament, Chronological splits, 4-Fold CV, SHAP
-│   ├── 04-deployment/               # Nordic Slate UI, GitHub Actions
-│   └── project_report.md            # 📑 Full Project Markdown Report
-├── src/                             # 🐍 Python ML & API Source Code
+│   ├── reports/                         # 📊 Publication infographics & diagrams
+│   │   ├── system_architecture_infographic.jpg
+│   │   ├── ml_tournament_infographic.jpg
+│   │   ├── shap_explainability_graphic.jpg
+│   │   └── health_impact_graphic.jpg
+│   └── designs/                         # 🎨 UI & Dashboard design snapshots
+├── data/
+│   └── aqi_weather_measurements_v1.parquet # Local cached dataset backup
+├── frontend/                            # ⚛️ React 19 + Vite Nordic Slate Web Dashboard
+│   ├── public/                          # Static assets, favicons & SVG action icons
+│   │   ├── favicon.svg
+│   │   ├── jogging.svg
+│   │   ├── lung.svg
+│   │   ├── mask.svg
+│   │   └── window.svg
+│   └── src/
+│       ├── assets/                      # Hero illustrations & logos
+│       ├── components/                  # 15 Modular React UI Components
+│       │   ├── ConcentricRings.jsx      # ⭕ SVG Concentric Activity Rings
+│       │   ├── CigaretteCard.jsx        # 🚬 Berkeley Earth Cigarette metric & ember
+│       │   ├── LifestyleGrid.jsx        # 🏃 2x2 Action Tiles (Cardio, Windows, etc.)
+│       │   ├── TimeTravelScrubber.jsx   # ⏱️ 49h Timeline Scrubber bar
+│       │   ├── PollutantBars.jsx        # 📊 WHO safety guideline progress bars
+│       │   ├── TrendsDashboard.jsx      # 📈 7-Day cards & Diurnal Heatmap
+│       │   ├── DiurnalGithubHeatmap.jsx # 🟩 24h x 7d Rush-Hour Matrix
+│       │   ├── ShapLab.jsx              # 🎛️ Interactive SHAP What-If Sliders
+│       │   ├── ModelTournament.jsx      # 🏆 3D Podium & 4-Fold CV Leaderboard
+│       │   ├── RegionalMap.jsx          # 🗺️ D3 GeoJSON Pakistan Regional Map
+│       │   ├── Aurora.jsx               # 🌌 WebGL Aurora Background Canvas
+│       │   └── *Skeleton.jsx            # 💀 Glassmorphic loading skeletons
+│       ├── data/                        # D3 Map GeoJSON Boundary Definitions
+│       │   ├── pakistan.json
+│       │   └── pakistan_provinces.json
+│       ├── lib/
+│       │   └── utils.js                 # Tailwind class merge utilities
+│       ├── App.jsx                      # Main dashboard coordinator
+│       ├── config.js                    # API base URL configuration
+│       └── index.css                    # Nordic Slate design tokens & animations
+├── notes/                               # 📓 Obsidian Knowledge Vault (16+ notes)
+│   ├── 00-Index.md                      # Master interactive knowledge map
+│   ├── 01-architecture/                 # Serverless stack, Feature store, FastAPI bridge
+│   ├── 02-data-pipeline/                # Data ingestion, Lags/Rolling, Hopsworks
+│   ├── 03-machine-learning/             # Tournament, Chronological splits, 4-Fold CV, SHAP
+│   ├── 04-deployment/                   # Nordic Slate UI, GitHub Actions, Regional Map
+│   └── project_report.md                # 📑 Full Project Markdown Report
+├── src/                                 # 🐍 Python ML & API Source Code
 │   ├── api/
-│   │   └── app.py                   # ⚡ FastAPI REST API Microservice
+│   │   └── app.py                       # ⚡ FastAPI REST API Microservice
 │   ├── features/
-│   │   ├── data_fetcher.py          # Open-Meteo multi-city data ingestion
-│   │   ├── feature_engineering.py   # Lags, rolling averages, cyclical sin/cos encodings
-│   │   └── hopsworks_pipeline.py    # Cloud feature group & model registry sync
+│   │   ├── data_fetcher.py              # Open-Meteo multi-city data ingestion
+│   │   ├── feature_engineering.py       # Lags, rolling averages, cyclical sin/cos encodings
+│   │   └── hopsworks_pipeline.py        # Cloud feature group & model registry sync
 │   ├── models/
-│   │   ├── train.py                 # 4-Fold CV, ML Tournament, & model serialization
-│   │   └── explainability.py        # SHAP TreeExplainer & What-If scenario engine
-│   └── config.py                    # Centralized coordinates, pollutants, & EPA categories
-├── Pearls_AQI_Predictor_Project_Report.docx # 📄 Formatted Word Document Report
-├── requirements.txt                 # Pinned Python dependencies
-└── README.md
+│   │   ├── train.py                     # 4-Fold CV, ML Tournament, & model serialization
+│   │   └── explainability.py            # SHAP TreeExplainer & What-If scenario engine
+│   └── config.py                        # Centralized coordinates, pollutants, & EPA categories
+├── Pearls_AQI_Predictor_Project_Report.pdf  # 📑 High-Resolution PDF Project Report
+├── Pearls_AQI_Predictor_Project_Report.docx # 📄 Formatted Microsoft Word Report
+├── requirements.txt                     # Pinned Python dependencies
+└── README.md                            # GitHub Repository Documentation
 ```
 
 ---
