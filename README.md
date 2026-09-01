@@ -173,13 +173,6 @@ Pearls-AQI-Predictor/
 │       ├── App.jsx                      # Main dashboard coordinator
 │       ├── config.js                    # API base URL configuration
 │       └── index.css                    # Nordic Slate design tokens & animations
-├── notes/                               # 📓 Obsidian Knowledge Vault (16+ notes)
-│   ├── 00-Index.md                      # Master interactive knowledge map
-│   ├── 01-architecture/                 # Serverless stack, Feature store, FastAPI bridge
-│   ├── 02-data-pipeline/                # Data ingestion, Lags/Rolling, Hopsworks
-│   ├── 03-machine-learning/             # Tournament, Chronological splits, 4-Fold CV, SHAP
-│   ├── 04-deployment/                   # Nordic Slate UI, GitHub Actions, Regional Map
-│   └── project_report.md                # 📑 Full Project Markdown Report
 ├── src/                                 # 🐍 Python ML & API Source Code
 │   ├── api/
 │   │   └── app.py                       # ⚡ FastAPI REST API Microservice

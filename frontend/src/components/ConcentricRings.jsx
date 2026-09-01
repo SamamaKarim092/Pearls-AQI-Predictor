@@ -155,8 +155,8 @@ export default function ConcentricRings({ current }) {
               strokeDasharray={circOuter}
               strokeDashoffset={offsetOuter}
               strokeLinecap="round"
-              filter="url(#arc-glow-filter)"
-              className="cursor-pointer transition-all duration-500 ease-out"
+              className="cursor-pointer transition-[stroke-dashoffset,stroke-width] duration-500 ease-out"
+              style={{ willChange: 'stroke-dashoffset', filter: 'drop-shadow(0 0 6px rgba(16,185,129,0.3))' }}
               onMouseEnter={() => setHoveredRing('outer')}
               onMouseLeave={() => setHoveredRing(null)}
               onClick={() => setShowInfoModal(true)}
@@ -173,8 +173,8 @@ export default function ConcentricRings({ current }) {
               strokeDasharray={circMid}
               strokeDashoffset={offsetMid}
               strokeLinecap="round"
-              filter="url(#arc-glow-filter)"
-              className="cursor-pointer transition-all duration-500 ease-out"
+              className="cursor-pointer transition-[stroke-dashoffset,stroke-width] duration-500 ease-out"
+              style={{ willChange: 'stroke-dashoffset', filter: 'drop-shadow(0 0 6px rgba(45,212,191,0.3))' }}
               onMouseEnter={() => setHoveredRing('mid')}
               onMouseLeave={() => setHoveredRing(null)}
               onClick={() => setShowInfoModal(true)}
@@ -191,8 +191,8 @@ export default function ConcentricRings({ current }) {
               strokeDasharray={circInner}
               strokeDashoffset={offsetInner}
               strokeLinecap="round"
-              filter="url(#arc-glow-filter)"
-              className="cursor-pointer transition-all duration-500 ease-out"
+              className="cursor-pointer transition-[stroke-dashoffset,stroke-width] duration-500 ease-out"
+              style={{ willChange: 'stroke-dashoffset', filter: 'drop-shadow(0 0 6px rgba(6,182,212,0.3))' }}
               onMouseEnter={() => setHoveredRing('inner')}
               onMouseLeave={() => setHoveredRing(null)}
               onClick={() => setShowInfoModal(true)}
