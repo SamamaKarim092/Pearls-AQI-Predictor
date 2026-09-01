@@ -40,15 +40,15 @@ export default function TimeTravelScrubber({
 
   // 5 Major tick milestone labels across the 72h window
   const milestones = [
-    { label: 'Past -24h', pos: 0 },
-    { label: 'Past -12h', pos: Math.round(maxVal * 0.25) },
-    { label: 'Live Now', pos: Math.round(maxVal * 0.5) },
-    { label: '+12h Next', pos: Math.round(maxVal * 0.75) },
-    { label: '+24h Next', pos: maxVal },
+    { label: 'Past -24h', shortLabel: '-24h', pos: 0 },
+    { label: 'Past -12h', shortLabel: '-12h', pos: Math.round(maxVal * 0.25) },
+    { label: 'Live Now', shortLabel: 'Live', pos: Math.round(maxVal * 0.5) },
+    { label: '+12h Next', shortLabel: '+12h', pos: Math.round(maxVal * 0.75) },
+    { label: '+24h Next', shortLabel: '+24h', pos: maxVal },
   ];
 
   return (
-    <div className="relative flex flex-col justify-between w-full h-full min-h-[175px] rounded-2xl border border-white/10 bg-slate-900/40 p-6 backdrop-blur-md">
+    <div className="relative flex flex-col justify-between w-full h-full min-h-[175px] rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:p-6 backdrop-blur-md">
       {/* Top Header Row with Floating-aligned Tooltip and Date | Time Button */}
       <div className="relative flex items-center justify-between min-h-[38px]">
         {/* Left spacer / Reset to Now shortcut */}
@@ -69,7 +69,7 @@ export default function TimeTravelScrubber({
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/90 border border-white/10 text-xs font-medium text-slate-200 hover:text-white hover:border-white/20 transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-slate-800/90 border border-white/10 text-xs font-medium text-slate-200 hover:text-white hover:border-white/20 transition-all cursor-pointer shadow-sm"
           >
             <span>City | Time</span>
             <ChevronDown
@@ -139,7 +139,7 @@ export default function TimeTravelScrubber({
           className="absolute -top-3 -translate-x-1/2 pointer-events-none transition-all duration-75 z-20"
           style={{ left: `${percentage}%` }}
         >
-          <div className="relative px-3 py-1 rounded-lg bg-slate-800/95 border border-white/15 text-[11px] font-medium text-slate-100 whitespace-nowrap shadow-lg select-none">
+          <div className="relative px-2.5 sm:px-3 py-1 rounded-lg bg-slate-800/95 border border-white/15 text-[10px] sm:text-[11px] font-medium text-slate-100 whitespace-nowrap shadow-lg select-none">
             {getTooltipText()}
             {/* Tooltip Downward Caret Arrow */}
             <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-800/95" />
@@ -195,7 +195,7 @@ export default function TimeTravelScrubber({
         </div>
 
         {/* Milestone Labels */}
-        <div className="relative flex justify-between w-full mt-1.5 text-[11px] text-slate-400 font-mono select-none">
+        <div className="relative flex justify-between w-full mt-1.5 text-[9px] sm:text-[11px] text-slate-400 font-mono select-none">
           {milestones.map((m, idx) => {
             const isActive = Math.abs(clampedIndex - m.pos) < 3;
             return (
@@ -206,7 +206,8 @@ export default function TimeTravelScrubber({
                 }`}
                 onClick={() => onChangeIndex && onChangeIndex(m.pos)}
               >
-                {m.label}
+                <span className="sm:hidden">{m.shortLabel}</span>
+                <span className="hidden sm:inline">{m.label}</span>
               </span>
             );
           })}

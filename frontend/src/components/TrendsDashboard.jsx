@@ -197,167 +197,167 @@ export default function TrendsDashboard({ selectedCity = 'Karachi' }) {
         <AnalyticsSkeleton activeTab={activeTab} />
       ) : (
         <div className="flex flex-col gap-5 w-full animate-data-enter">
-          {/* Row 1: 4 KPI Stat Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Average AQI */}
-        <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5 backdrop-blur-md flex flex-col justify-between">
-          <span className="text-xs font-medium text-slate-400">
-            {kpis.average_aqi.period || `${activeTab === '3day' ? '3' : '7'}-Day Average AQI`}
-          </span>
-          <div className="flex items-baseline gap-3 mt-3">
-            <span className="text-4xl font-bold tracking-tight text-white font-mono">
-              {kpis.average_aqi.value}
-            </span>
-            <span
-              className="px-2.5 py-0.5 rounded-full text-xs font-medium border"
-              style={{
-                backgroundColor: `${kpis.average_aqi.color}20`,
-                borderColor: `${kpis.average_aqi.color}40`,
-                color: kpis.average_aqi.color,
-              }}
-            >
-              {kpis.average_aqi.label}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Cleanest Day */}
-        <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5 backdrop-blur-md flex flex-col justify-between">
-          <span className="text-xs font-medium text-slate-400">Cleanest Day</span>
-          <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-2xl font-bold text-slate-200">
-              {kpis.cleanest_day.day_name}
-            </span>
-            <span className="text-3xl font-bold text-emerald-400 font-mono drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]">
-              {kpis.cleanest_day.aqi}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Peak Smog */}
-        <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5 backdrop-blur-md flex flex-col justify-between">
-          <span className="text-xs font-medium text-slate-400">Peak Smog</span>
-          <div className="flex items-baseline gap-2 mt-3">
-            <span className="text-2xl font-bold text-slate-200">
-              {kpis.peak_smog.day_name}
-            </span>
-            <span
-              className="text-3xl font-bold font-mono"
-              style={{ color: kpis.peak_smog.color }}
-            >
-              {kpis.peak_smog.aqi}
-            </span>
-            <span
-              className="px-2 py-0.5 rounded-full text-[11px] font-medium border ml-auto"
-              style={{
-                backgroundColor: `${kpis.peak_smog.color}20`,
-                borderColor: `${kpis.peak_smog.color}40`,
-                color: kpis.peak_smog.color,
-              }}
-            >
-              {kpis.peak_smog.category}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 4: Dominant Hazard */}
-        <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5 backdrop-blur-md flex flex-col justify-between">
-          <span className="text-xs font-medium text-slate-400">Dominant Hazard</span>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-3xl font-bold tracking-tight text-white font-mono">
-              {kpis.dominant_hazard.pollutant}
-            </span>
-            <div className="text-right">
-              <span className="text-xs font-semibold text-slate-300 font-mono block">
-                {kpis.dominant_hazard.percentage}
+          {/* Row 1: 4 KPI Stat Cards (2x2 on Mobile, 4x1 on Desktop) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {/* Card 1: Average AQI */}
+            <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-3.5 sm:p-5 backdrop-blur-md flex flex-col justify-between">
+              <span className="text-[11px] sm:text-xs font-medium text-slate-400">
+                {kpis.average_aqi.period || `${activeTab === '3day' ? '3' : '7'}-Day Average AQI`}
               </span>
-              <span className="text-[10px] text-slate-400">PM2.5, 85% e.g., 10%</span>
+              <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mt-2 sm:mt-3">
+                <span className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-mono">
+                  {kpis.average_aqi.value}
+                </span>
+                <span
+                  className="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium border"
+                  style={{
+                    backgroundColor: `${kpis.average_aqi.color}20`,
+                    borderColor: `${kpis.average_aqi.color}40`,
+                    color: kpis.average_aqi.color,
+                  }}
+                >
+                  {kpis.average_aqi.label}
+                </span>
+              </div>
+            </div>
+
+            {/* Card 2: Cleanest Day */}
+            <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-3.5 sm:p-5 backdrop-blur-md flex flex-col justify-between">
+              <span className="text-[11px] sm:text-xs font-medium text-slate-400">Cleanest Day</span>
+              <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+                <span className="text-lg sm:text-2xl font-bold text-slate-200">
+                  {kpis.cleanest_day.day_name}
+                </span>
+                <span className="text-2xl sm:text-3xl font-bold text-emerald-400 font-mono drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]">
+                  {kpis.cleanest_day.aqi}
+                </span>
+              </div>
+            </div>
+
+            {/* Card 3: Peak Smog */}
+            <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-3.5 sm:p-5 backdrop-blur-md flex flex-col justify-between">
+              <span className="text-[11px] sm:text-xs font-medium text-slate-400">Peak Smog</span>
+              <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+                <span className="text-lg sm:text-2xl font-bold text-slate-200">
+                  {kpis.peak_smog.day_name}
+                </span>
+                <span
+                  className="text-2xl sm:text-3xl font-bold font-mono"
+                  style={{ color: kpis.peak_smog.color }}
+                >
+                  {kpis.peak_smog.aqi}
+                </span>
+                <span
+                  className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[11px] font-medium border ml-auto"
+                  style={{
+                    backgroundColor: `${kpis.peak_smog.color}20`,
+                    borderColor: `${kpis.peak_smog.color}40`,
+                    color: kpis.peak_smog.color,
+                  }}
+                >
+                  {kpis.peak_smog.category}
+                </span>
+              </div>
+            </div>
+
+            {/* Card 4: Dominant Hazard */}
+            <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-3.5 sm:p-5 backdrop-blur-md flex flex-col justify-between">
+              <span className="text-[11px] sm:text-xs font-medium text-slate-400">Dominant Hazard</span>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span className="text-xl sm:text-3xl font-bold tracking-tight text-white font-mono">
+                  {kpis.dominant_hazard.pollutant}
+                </span>
+                <div className="text-right">
+                  <span className="text-[11px] sm:text-xs font-semibold text-slate-300 font-mono block">
+                    {kpis.dominant_hazard.percentage}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] text-slate-400 block truncate">Air Exposure</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Row 2: 7-Day / 3-Day Glowing Forecast Area Chart */}
-      <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-6 backdrop-blur-md relative overflow-hidden">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <TrendingUp size={16} className="text-emerald-400" />
-            <h2 className="text-sm font-semibold tracking-wide text-white">
-              {activeTab === '3day' ? 'Upcoming 3-Day Hourly AI Forecast Wave' : '7-Day AQI Forecast'}
-            </h2>
-          </div>
-          <span className="text-xs text-slate-400 font-mono">
-            {selectedCity} &bull; LightGBM Ensemble Confidence: 94.2%
-          </span>
-        </div>
-
-        {/* Glowing SVG Wave Canvas */}
-        <div className="relative w-full h-44 sm:h-52 my-1">
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/15 to-amber-500/10 blur-2xl pointer-events-none" />
-
-          <svg
-            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-            preserveAspectRatio="none"
-            className="w-full h-full overflow-visible"
-          >
-            <defs>
-              <linearGradient id="wave-area-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#10b981" stopOpacity="0.32" />
-                <stop offset="60%" stopColor="#14b8a6" stopOpacity="0.10" />
-                <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-
-            {/* Grid Guidelines */}
-            <line x1="0" y1="50" x2={svgWidth} y2="50" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
-            <line x1="0" y1="110" x2={svgWidth} y2="110" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
-            <line x1="0" y1="170" x2={svgWidth} y2="170" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
-
-            <path d={areaPath} fill="url(#wave-area-grad)" />
-
-            <path
-              d={linePath}
-              fill="none"
-              stroke="#2dd4bf"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="drop-shadow-[0_0_10px_rgba(45,212,191,0.55)] transition-all duration-300"
-              style={{ willChange: 'd' }}
-            />
-          </svg>
-        </div>
-      </div>
-
-      {/* Row 3: Daily Forecast Cards Carousel (3 or 7 cards) */}
-      <div className={`grid gap-3 ${activeTab === '3day' ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7'}`}>
-        {dailyCards.map((card, idx) => (
-          <div
-            key={idx}
-            className="rounded-2xl border border-white/10 bg-slate-900/50 p-3.5 backdrop-blur-md flex flex-col justify-between items-center text-center transition-all hover:border-white/25 hover:bg-slate-800/60 group"
-          >
-            <div className="my-1 group-hover:scale-110 transition-transform">
-              <WeatherIcon type={card.weather_icon} className="w-7 h-7 text-amber-400" />
+          {/* Row 2: 7-Day / 3-Day Glowing Forecast Area Chart */}
+          <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:p-6 backdrop-blur-md relative overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp size={16} className="text-emerald-400" />
+                <h2 className="text-xs sm:text-sm font-semibold tracking-wide text-white">
+                  {activeTab === '3day' ? 'Upcoming 3-Day Hourly AI Forecast Wave' : '7-Day AQI Forecast'}
+                </h2>
+              </div>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-mono">
+                {selectedCity} &bull; Confidence: 94.2%
+              </span>
             </div>
 
-            <div className="mt-1">
-              <span className="text-sm font-semibold text-white block">{card.day_name}</span>
-              <span className="text-[11px] text-slate-400 font-mono block">{card.date_str}</span>
-            </div>
+            {/* Glowing SVG Wave Canvas */}
+            <div className="relative w-full h-36 sm:h-52 my-1">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/15 to-amber-500/10 blur-2xl pointer-events-none" />
 
-            <div
-              className="mt-3 w-full py-1 rounded-xl text-xs font-bold font-mono transition-all"
-              style={{
-                backgroundColor: `${card.color}25`,
-                color: card.color === '#FFFF00' ? '#facc15' : card.color,
-                border: `1px solid ${card.color}45`,
-              }}
-            >
-              {card.aqi}
+              <svg
+                viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                preserveAspectRatio="none"
+                className="w-full h-full overflow-visible"
+              >
+                <defs>
+                  <linearGradient id="wave-area-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.32" />
+                    <stop offset="60%" stopColor="#14b8a6" stopOpacity="0.10" />
+                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+
+                {/* Grid Guidelines */}
+                <line x1="0" y1="50" x2={svgWidth} y2="50" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+                <line x1="0" y1="110" x2={svgWidth} y2="110" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+                <line x1="0" y1="170" x2={svgWidth} y2="170" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+
+                <path d={areaPath} fill="url(#wave-area-grad)" />
+
+                <path
+                  d={linePath}
+                  fill="none"
+                  stroke="#2dd4bf"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="drop-shadow-[0_0_10px_rgba(45,212,191,0.55)] transition-all duration-300"
+                  style={{ willChange: 'd' }}
+                />
+              </svg>
             </div>
           </div>
-        ))}
-      </div>
+
+          {/* Row 3: Daily Forecast Cards Carousel (3 or 7 cards) */}
+          <div className={`grid gap-2.5 sm:gap-3 ${activeTab === '3day' ? 'grid-cols-3' : 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-7'}`}>
+            {dailyCards.map((card, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border border-white/10 bg-slate-900/50 p-2.5 sm:p-3.5 backdrop-blur-md flex flex-col justify-between items-center text-center transition-all hover:border-white/25 hover:bg-slate-800/60 group"
+              >
+                <div className="my-0.5 sm:my-1 group-hover:scale-110 transition-transform">
+                  <WeatherIcon type={card.weather_icon} className="w-5 h-5 sm:w-7 sm:h-7 text-amber-400" />
+                </div>
+
+                <div className="mt-0.5 sm:mt-1">
+                  <span className="text-xs sm:text-sm font-semibold text-white block">{card.day_name}</span>
+                  <span className="text-[9px] sm:text-[11px] text-slate-400 font-mono block">{card.date_str}</span>
+                </div>
+
+                <div
+                  className="mt-2 sm:mt-3 w-full py-0.5 sm:py-1 rounded-xl text-[10px] sm:text-xs font-bold font-mono transition-all"
+                  style={{
+                    backgroundColor: `${card.color}25`,
+                    color: card.color === '#FFFF00' ? '#facc15' : card.color,
+                    border: `1px solid ${card.color}45`,
+                  }}
+                >
+                  {card.aqi}
+                </div>
+              </div>
+            ))}
+          </div>
 
       {/* ========================================================================= */}
       {/* Row 4: Deep Atmospheric Insights Bento Grid */}
