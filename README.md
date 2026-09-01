@@ -16,7 +16,7 @@
 
 | Resource | Link | Description |
 | :--- | :--- | :--- |
-| 🌐 **Live Web Dashboard** | [https://pearls-aqi-predictor.vercel.app](https://pearls-aqi-predictor.vercel.app) *(or your Vercel URL)* | 5-Page Nordic Slate React/Vite interface |
+| 🌐 **Live Web Dashboard** | [https://pearls-aqi-predictor.vercel.app](https://pearls-aqi-predictor-six.vercel.app) *(or your Vercel URL)* | 5-Page Nordic Slate React/Vite interface |
 | ⚡ **Live Backend API** | [https://pearls-aqi-predictor-xxw6.onrender.com](https://pearls-aqi-predictor-xxw6.onrender.com) | FastAPI REST Microservice on Render |
 | 📖 **Interactive API Docs** | [https://pearls-aqi-predictor-xxw6.onrender.com/docs](https://pearls-aqi-predictor-xxw6.onrender.com/docs) | Swagger UI for testing live endpoints |
 | 📑 **Final Project Report** | [Pearls_AQI_Predictor_Project_Report.pdf](Pearls_AQI_Predictor_Project_Report.pdf) | Formatted research and technical report |
