@@ -91,10 +91,8 @@ export default function ConcentricRings({ current }) {
           />
 
           <svg
-            width={size}
-            height={size}
             viewBox={`0 0 ${size} ${size}`}
-            className="transform -rotate-90"
+            className="transform -rotate-90 w-full max-w-[260px] sm:max-w-[280px] h-auto"
           >
             <defs>
               <filter id="arc-glow-filter" x="-30%" y="-30%" width="160%" height="160%">
@@ -214,7 +212,7 @@ export default function ConcentricRings({ current }) {
         </div>
 
         {/* Interactive Ring Legend Chips */}
-        <div className="flex items-center justify-center gap-3 w-full pt-1 select-none">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-3 w-full pt-1 select-none">
           <button
             onMouseEnter={() => setHoveredRing('outer')}
             onMouseLeave={() => setHoveredRing(null)}
