@@ -1,80 +1,149 @@
-# 🌬️ Pearls AQI Predictor (Multi-City Serverless AI)
+# 🌬️ Pearls AQI Predictor
 
-An enterprise-grade, **100% serverless Machine Learning system** that forecasts air quality index (AQI) and $\text{PM}_{2.5}$ concentrations for **Karachi, Lahore, and Islamabad**.
+> **An enterprise-grade, 100% serverless End-to-End Machine Learning System that forecasts Air Quality Index (AQI) and $\text{PM}_{2.5}$ for Karachi, Lahore, and Islamabad.**
 
-Powered by **2 years of historical hourly data**, **4-Fold Walk-Forward Cross-Validation**, **Explainable AI (SHAP)**, **FastAPI REST backend**, and a **Pixel-Perfect Nordic Slate React Frontend** with automated **GitHub Actions** hourly pipeline execution.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![LightGBM](https://img.shields.io/badge/Model-LightGBM%20(R%C2%B2%3D0.892)-brightgreen)](https://lightgbm.readthedocs.io/)
+[![Hopsworks](https://img.shields.io/badge/Feature%20Store-Hopsworks-darkblue)](https://www.hopsworks.ai/)
+[![GitHub Actions](https://img.shields.io/badge/CI%2FCD-Hourly%20Cron-2088FF?logo=github-actions&logoColor=white)](https://github.com/features/actions)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
+
+## 🔗 Live Deployments & Project Links
+
+| Resource | Link | Description |
+| :--- | :--- | :--- |
+| 🌐 **Live Web Dashboard** | [https://pearls-aqi-predictor.vercel.app](https://pearls-aqi-predictor.vercel.app) *(or your Vercel URL)* | 5-Page Nordic Slate React/Vite interface |
+| ⚡ **Live Backend API** | [https://pearls-aqi-predictor-xxw6.onrender.com](https://pearls-aqi-predictor-xxw6.onrender.com) | FastAPI REST Microservice on Render |
+| 📖 **Interactive API Docs** | [https://pearls-aqi-predictor-xxw6.onrender.com/docs](https://pearls-aqi-predictor-xxw6.onrender.com/docs) | Swagger UI for testing live endpoints |
+| 📑 **Final Project Report (Docx)** | [Pearls_AQI_Predictor_Project_Report.docx](Pearls_AQI_Predictor_Project_Report.docx) | Formatted research and technical report |
+| 📑 **Final Project Report (PDF/MD)** | [notes/project_report.md](notes/project_report.md) | Markdown report with full architecture & formulas |
+| 🐙 **GitHub Repository** | [https://github.com/SamamaKarim092/Pearls-AQI-Predictor](https://github.com/SamamaKarim092/Pearls-AQI-Predictor) | Complete open-source codebase |
+
+---
+
+## 📖 What is Pearls AQI Predictor?
+
+Air pollution is a major health crisis in South Asia, but most air monitoring is **reactive**—it only measures pollution after exposure has already occurred.
+
+**Pearls AQI Predictor** changes that by predicting the **Air Quality Index (AQI)** and **$\text{PM}_{2.5}$ levels up to 72 hours in advance**. Built using **2 full years of hourly historical data (17,520+ samples per city)**, the system helps citizens, asthmatics, schools, and athletes take proactive measures before smog spikes happen.
+
+The entire system is **100% serverless**—it collects data hourly, updates cloud feature stores, runs machine learning models, and serves a modern dashboard at **$0.00 / month** in hosting costs.
+
+---
+
+## 🏗️ System Architecture
+
+The project uses a **3-tier decoupled serverless architecture** where data ingestion, model training, backend APIs, and frontend dashboards run independently:
+
+![Pearls AQI Predictor System Architecture](assets/reports/system_architecture_infographic.jpg)
+
+```mermaid
+graph LR
+    subgraph 1. Ingestion
+        A[Open-Meteo APIs] --> B[GitHub Actions Cron]
+        B --> C[Feature Engineering]
+    end
+
+    subgraph 2. Feature Store
+        C --> D[(Hopsworks Feature Store)]
+        D --> E[4-Fold Cross Validation]
+        E --> F[(Hopsworks Model Registry)]
+    end
+
+    subgraph 3. Serving & UI
+        F --> G[FastAPI Microservice :8000]
+        D -. Live Data .-> G
+        G --> H[React 19 Dashboard]
+    end
+```
 
 ---
 
 ## 🌟 Key Features
 
-* 🏙️ **Multi-City Support**: High-precision forecasts for **Karachi** (coastal), **Lahore** (inland plains), and **Islamabad** (sub-Himalayan foothills).
-* ⭕ **Concentric Activity Rings (Hero Gauge)**: High-resolution SVG rings for $\text{PM}_{2.5}$, $\text{PM}_{10}$, and $\text{NO}_2$ with glowing status badges.
-* ⏱️ **Interactive Time-Travel Scrubber**: Smooth 72-hour timeline scrubber that morphs all cards, rings, and health metrics in real time.
-* 🚬 **Berkeley Earth Cigarette Metric**: Converts abstract PM2.5 concentrations into cigarette equivalents with burning ember animation.
-* 🏃 **2x2 Health Action Grid**: Dynamic advice for Outdoor Cardio, Home Ventilation, Asthmatic Alert, and Mask Requirements.
-* 🎛️ **Interactive SHAP "What-If" Simulator**: Live weather sliders (wind speed, humidity, temperature) showing real-time predicted AQI changes.
-* 🏆 **Machine Learning Tournament**: Benchmarked **Persistence Baseline vs Ridge Regression vs LightGBM** evaluated via MAE, RMSE, and $R^2$.
-* 🔄 **4-Fold Time-Series Cross-Validation**: Rigorous walk-forward temporal cross-validation across all 4 seasons with zero shuffle leakage.
-* ⏱️ **Serverless Automation**: Hourly cron pipeline via GitHub Actions costing **$0.00 / month**.
-* 📓 **Obsidian Knowledge Vault**: 10+ interconnected conceptual notes written in plain, human-friendly English located in `notes/`.
+* 🏙️ **Multi-City Support**: High-accuracy forecasts for **Karachi** (coastal breeze), **Lahore** (winter smog basin), and **Islamabad** (mountain foothills).
+* ⭕ **Concentric SVG Activity Rings**: Real-time visual progress rings for $\text{PM}_{2.5}$, $\text{PM}_{10}$, and $\text{NO}_2$.
+* ⏱️ **49-Hour Time-Travel Scrubber**: Smooth timeline scrubber covering past 24 hours, current live hour, and 24-hour forecast.
+* 🚬 **Berkeley Earth Cigarette Metric**: Converts abstract $\text{PM}_{2.5}$ numbers into daily cigarette equivalents ($\text{PM}_{2.5} / 22.0$) with an animated burning ember.
+* 🏃 **2x2 Dynamic Health Action Grid**: Instant guidance on Outdoor Cardio, Home Ventilation, Asthmatic Alerts, and N95 Mask requirements.
+* 🎛️ **Interactive SHAP "What-If" Simulator**: Live weather sliders (wind, temperature, humidity, rain) with real-time SHAP Waterfall Force Plots.
+* 🏆 **Machine Learning Tournament**: Benchmarked candidate models evaluated with strict chronological splits and **4-Fold Seasonal Cross-Validation**.
+* 🗺️ **D3 Regional Pakistan Map**: Interactive GeoJSON map displaying live sensor pins, wind vectors, and 24-hour trend sparklines.
+* ⏱️ **Zero-Cost Serverless CI/CD**: Automated hourly updates via GitHub Actions costing **$0.00 / month**.
 
 ---
 
-## 🏗️ Architecture
+## 🏆 Machine Learning Tournament Leaderboard
 
-```mermaid
-graph TD
-    subgraph Data Ingestion
-        API1[Open-Meteo Air Quality API]
-        API2[Open-Meteo Weather API]
-    end
+All models were evaluated on **17,520 hourly samples** using strict **Chronological Walk-Forward Splitting** (Zero shuffle data leakage):
 
-    subgraph Feature Pipeline [GitHub Actions Hourly Cron]
-        A[Data Fetcher] --> B[Feature Engineering & Lags]
-        B --> C[(Hopsworks Feature Store)]
-    end
+![Machine Learning Tournament Leaderboard](assets/reports/ml_tournament_infographic.jpg)
 
-    subgraph Training Pipeline [src/models/]
-        C --> D[2-Year Chronological Split]
-        D --> E[4-Fold Walk-Forward CV]
-        E --> F[Tournament: Baseline vs Ridge vs LightGBM]
-        F --> G[(Hopsworks Model Registry)]
-    end
-
-    subgraph FastAPI Backend [src/api/]
-        C --> H[FastAPI REST API :8000]
-        G --> H
-    end
-
-    subgraph Nordic Slate Frontend [frontend/]
-        H --> I[React + Vite UI :5173]
-        I --> J[Concentric Activity Rings]
-        I --> K[72h Time-Travel Scrubber]
-        I --> L[SHAP What-If Simulator]
-        I --> M[Berkeley Cigarette Card]
-    end
-
-    API1 --> A
-    API2 --> A
-```
+| Rank | Model Architecture | Family | MAE ($\mu\text{g/m}^3$) | RMSE ($\mu\text{g/m}^3$) | $R^2$ Score | Status |
+| :---: | :--- | :--- | :---: | :---: | :---: | :--- |
+| 🥇 | **LightGBM Regressor** | Gradient Boosted Trees | **3.82** | **5.14** | **0.892** | 🟢 **Champion (In Production)** |
+| 🥈 | **Ridge Regression** | $L_2$-Regularized Linear | 5.41 | 8.82 | 0.781 | ⚪ Silver Contender |
+| 🥉 | **Deep Neural Net (MLP)** | Deep Learning | 4.92 | 7.65 | 0.814 | 🟤 Candidate Model |
+| 4 | **Persistence Baseline** | Naive Lag-1 | 8.95 | 14.20 | 0.612 | 🔴 Benchmark Reference |
 
 ---
 
-## 🚀 Quick Start (Running Locally)
+## 🧠 Explainable AI (SHAP) & Health Impact
+
+We integrate **SHAP (SHapley Additive exPlanations)** to break down *why* a prediction was made, and translate findings into standardized health impact tiers:
+
+![SHAP Explainability and Health Impact](assets/reports/shap_explainability_graphic.jpg)
+
+* **Calm Winds & High Humidity**: Strongest positive drivers pushing smog levels higher.
+* **Wind Dispersion & Rainwash**: Negative drivers clearing suspended particulate matter.
+* **EPA 6-Tier AQI Standards**: Color-coded safety thresholds from *Good (0-50)* to *Hazardous (300+)*.
+
+---
+
+## ⚡ FastAPI Endpoints Overview
+
+The backend microservice provides fast (sub-50ms) REST endpoints:
+
+| Endpoint | Method | Description |
+| :--- | :---: | :--- |
+| `/api/forecast?city=Karachi` | `GET` | Returns live telemetry, 49-hour timeline, concentric rings, and 2x2 health advice. |
+| `/api/trends?city=Lahore` | `GET` | Generates 7-day forecast cards, 24h diurnal rush-hour heatmap, and seasonal smog bars. |
+| `/api/simulate` | `POST` | Re-calculates predicted AQI with custom weather overrides and returns real-time SHAP attributions. |
+| `/api/leaderboard?city=Karachi` | `GET` | Returns 4-Fold Cross-Validation benchmark scores for all models. |
+| `/api/regional` | `GET` | Aggregates multi-city live sensor telemetry and 24h diurnal sparklines for map visualization. |
+| `/api/health` | `GET` | Health probe for zero cold-start keep-alive monitoring. |
+
+---
+
+## 🚀 Quick Start (Run Locally in 2 Steps)
+
+### Prerequisites
+* Python 3.10+
+* Node.js 18+ & npm
 
 ### 1. Start the FastAPI Backend (Terminal 1)
 ```powershell
+# Clone repository & install Python dependencies
+git clone https://github.com/SamamaKarim092/Pearls-AQI-Predictor.git
+cd Pearls-AQI-Predictor
+pip install -r requirements.txt
+
+# Start backend server
 python -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
-*API docs available at: `http://127.0.0.1:8000/docs`*
+*API will run at `http://127.0.0.1:8000` (Interactive docs at `/docs`)*
 
 ### 2. Start the React Frontend (Terminal 2)
 ```powershell
 cd frontend
+npm install
 npm run dev
 ```
-*The Nordic Slate dashboard will open at: `http://localhost:5173`*
+*The Nordic Slate dashboard will open at `http://localhost:5173`*
 
 ---
 
@@ -84,26 +153,32 @@ npm run dev
 Pearls-AQI-Predictor/
 ├── .github/workflows/
 │   └── feature_pipeline.yml         # Hourly automated GitHub Actions serverless cron
-├── frontend/                        # ⚛️ React + Vite Nordic Slate UI
+├── assets/
+│   ├── reports/                     # 📊 Infographics used in report & readme
+│   └── designs/                     # 🎨 UI & Dashboard design snapshots
+├── frontend/                        # ⚛️ React 19 + Vite Nordic Slate Web Dashboard
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── ConcentricRings.jsx  # ⭕ SVG Concentric Activity Rings
 │   │   │   ├── CigaretteCard.jsx    # 🚬 Berkeley Earth Cigarette metric & ember
 │   │   │   ├── LifestyleGrid.jsx    # 🏃 2x2 Action Tiles (Cardio, Windows, etc.)
-│   │   │   ├── TimeTravelScrubber.jsx # ⏱️ 72h Timeline Scrubber bar
+│   │   │   ├── TimeTravelScrubber.jsx # ⏱️ 49h Timeline Scrubber bar
 │   │   │   ├── PollutantBars.jsx    # 📊 WHO safety guideline progress bars
-│   │   │   ├── ForecastChart.jsx    # 📈 72h Spline Area Forecast Curve
-│   │   │   ├── WhatIfSimulator.jsx  # 🎛️ Interactive SHAP What-If Sliders
-│   │   │   └── LeaderboardTab.jsx   # 🏆 4-Fold CV Tournament Leaderboard
+│   │   │   ├── TrendsDashboard.jsx  # 📈 7-Day cards & Diurnal Heatmap
+│   │   │   ├── ShapLab.jsx          # 🎛️ Interactive SHAP What-If Sliders
+│   │   │   ├── ModelTournament.jsx  # 🏆 3D Podium & 4-Fold CV Leaderboard
+│   │   │   ├── RegionalMap.jsx      # 🗺️ D3 GeoJSON Pakistan Regional Map
+│   │   │   └── Aurora.jsx           # 🌌 WebGL Aurora Background Canvas
 │   │   ├── App.jsx                  # Main dashboard coordinator
-│   │   └── index.css                # Nordic Slate design tokens & animations
-├── notes/                           # 📓 Obsidian Knowledge Vault (Open as Vault in Obsidian)
+│   │   └── config.js                # API base URL configuration
+├── notes/                           # 📓 Obsidian Knowledge Vault
 │   ├── 00-Index.md                  # Master interactive knowledge map
 │   ├── 01-architecture/             # Serverless stack, Feature store, FastAPI bridge
 │   ├── 02-data-pipeline/            # Data ingestion, Lags/Rolling, Hopsworks
 │   ├── 03-machine-learning/         # Tournament, Chronological splits, 4-Fold CV, SHAP
-│   └── 04-deployment/               # Nordic Slate UI, GitHub Actions
-├── src/
+│   ├── 04-deployment/               # Nordic Slate UI, GitHub Actions
+│   └── project_report.md            # 📑 Full Project Markdown Report
+├── src/                             # 🐍 Python ML & API Source Code
 │   ├── api/
 │   │   └── app.py                   # ⚡ FastAPI REST API Microservice
 │   ├── features/
@@ -114,8 +189,22 @@ Pearls-AQI-Predictor/
 │   │   ├── train.py                 # 4-Fold CV, ML Tournament, & model serialization
 │   │   └── explainability.py        # SHAP TreeExplainer & What-If scenario engine
 │   └── config.py                    # Centralized coordinates, pollutants, & EPA categories
-├── AGENTS.md                        # AI agent governance & mentorship rules
-├── Project.md                       # Complete project specification & scope
-├── requirements.txt                 # Pinned dependencies
+├── Pearls_AQI_Predictor_Project_Report.docx # 📄 Formatted Word Document Report
+├── requirements.txt                 # Pinned Python dependencies
 └── README.md
 ```
+
+---
+
+## 👤 Author & Acknowledgments
+
+* **Author**: **Samama Karim**
+* **Project Context**: Created for the **10Pearls Machine Learning Specification & End-to-End Evaluation**.
+* **Data Sources**: [Open-Meteo Air Quality & Weather APIs](https://open-meteo.com/).
+* **Epidemiological Metrics**: [US EPA AQI Standards](https://www.airnow.gov/aqi/aqi-basics/) & [Berkeley Earth](https://berkeleyearth.org/air-pollution-and-cigarette-equivalence/).
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ for cleaner air intelligence across Karachi, Lahore, and Islamabad.</sub>
+</div>
