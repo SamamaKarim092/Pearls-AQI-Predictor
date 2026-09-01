@@ -721,64 +721,64 @@ export default function ModelTournament({ selectedCity = 'Karachi' }) {
           </button>
         </div>
 
-        {/* 4 Telemetry Metric Cards Bento Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 4 Telemetry Metric Cards Bento Grid (2x2 on mobile, 4x1 on desktop) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Card 1: 17,520 Training Samples */}
-          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-1">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
-              <Database size={20} />
+          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-3 sm:p-4 backdrop-blur-md flex flex-col sm:flex-row items-center gap-2 sm:gap-3.5 text-center sm:text-left shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-1">
+            <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
+              <Database size={18} />
             </div>
             <div>
-              <div className="text-xl font-bold text-white tracking-tight font-mono">
+              <div className="text-base sm:text-xl font-bold text-white tracking-tight font-mono">
                 17,520
               </div>
-              <div className="text-xs text-slate-400">
+              <div className="text-[10px] sm:text-xs text-slate-400">
                 Training Samples
               </div>
             </div>
           </div>
 
           {/* Card 2: Hopsworks Model Registry v2.1 */}
-          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-2">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
-              <Box size={20} />
+          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-3 sm:p-4 backdrop-blur-md flex flex-col sm:flex-row items-center gap-2 sm:gap-3.5 text-center sm:text-left shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-2">
+            <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
+              <Box size={18} />
             </div>
             <div>
-              <div className="text-base font-bold text-white tracking-tight">
+              <div className="text-sm sm:text-base font-bold text-white tracking-tight">
                 Hopsworks
               </div>
-              <div className="text-xs text-slate-400">
-                Model Registry v2.1
+              <div className="text-[10px] sm:text-xs text-slate-400">
+                Registry v2.1
               </div>
             </div>
           </div>
 
           {/* Card 3: Inference Latency: 12ms */}
-          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
-              <Timer size={20} />
+          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-3 sm:p-4 backdrop-blur-md flex flex-col sm:flex-row items-center gap-2 sm:gap-3.5 text-center sm:text-left shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-3">
+            <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 border border-teal-500/40 text-teal-300">
+              <Timer size={18} />
             </div>
             <div>
-              <div className="text-base font-bold text-white tracking-tight">
+              <div className="text-sm sm:text-base font-bold text-white tracking-tight">
                 Inference
               </div>
-              <div className="text-xs text-slate-300">
+              <div className="text-[10px] sm:text-xs text-slate-300">
                 Latency: <span className="font-mono text-emerald-300 font-semibold">12ms</span>
               </div>
             </div>
           </div>
 
           {/* Card 4: GitHub Actions Serverless Cron: Active */}
-          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-4 backdrop-blur-md flex items-center gap-3.5 shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-300">
-              <GitBranch size={20} />
+          <div className="rounded-2xl bg-[#0a1824]/90 border border-teal-500/60 p-3 sm:p-4 backdrop-blur-md flex flex-col sm:flex-row items-center gap-2 sm:gap-3.5 text-center sm:text-left shadow-[0_0_20px_rgba(20,184,166,0.15)] transition-all hover:border-teal-400 hover:shadow-[0_0_25px_rgba(20,184,166,0.25)] animate-telemetry-stagger-4">
+            <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-300">
+              <GitBranch size={18} />
             </div>
             <div>
-              <div className="text-base font-bold text-white tracking-tight">
-                GitHub Actions
+              <div className="text-sm sm:text-base font-bold text-white tracking-tight">
+                CI/CD Cron
               </div>
-              <div className="text-xs text-emerald-300 flex items-center gap-1 font-medium">
-                <span>Serverless Cron: Active</span>
+              <div className="text-[10px] sm:text-xs text-emerald-300 flex items-center gap-1 font-medium justify-center sm:justify-start">
+                <span>Active</span>
               </div>
             </div>
           </div>
