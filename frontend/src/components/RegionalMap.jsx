@@ -619,18 +619,21 @@ export default function RegionalMap() {
               </span>
             </div>
 
-            {/* Table Column Headers */}
-            <div className="grid grid-cols-12 gap-2 text-[11px] font-semibold text-slate-400 px-3 pb-2 select-none">
-              <div className="col-span-3">City</div>
-              <div className="col-span-2 text-center">AQI Score</div>
-              <div className="col-span-2 text-center">Health Status</div>
-              <div className="col-span-2 text-center">Dominant Pollutant</div>
-              <div className="col-span-1 text-center">Wind Speed</div>
-              <div className="col-span-2 text-right">Cigarette Equivalence</div>
-            </div>
+            {/* Scrollable Table Area for Mobile */}
+            <div className="overflow-x-auto no-scrollbar touch-pan-x">
+              <div className="min-w-[480px]">
+                {/* Table Column Headers */}
+                <div className="grid grid-cols-12 gap-2 text-[11px] font-semibold text-slate-400 px-3 pb-2 select-none">
+                  <div className="col-span-3">City</div>
+                  <div className="col-span-2 text-center">AQI Score</div>
+                  <div className="col-span-2 text-center">Health Status</div>
+                  <div className="col-span-2 text-center">Dominant Pollutant</div>
+                  <div className="col-span-1 text-center">Wind Speed</div>
+                  <div className="col-span-2 text-right">Cigarette Equivalence</div>
+                </div>
 
-            {/* Table Rows (Islamabad, Karachi, Lahore) */}
-            <div className="space-y-3 pt-1">
+                {/* Table Rows (Islamabad, Karachi, Lahore) */}
+                <div className="space-y-3 pt-1">
               {cities.map((c) => {
                 const isSelected = selectedCity === c.city || hoveredCity === c.city;
                 const isGood = c.health_status === 'Good';
@@ -717,10 +720,12 @@ export default function RegionalMap() {
                   </div>
                 );
               })}
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Table Bottom Helper Note */}
+        {/* Table Bottom Helper Note */}
           <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 size={13} className="text-emerald-400" />
@@ -875,16 +880,16 @@ export default function RegionalMap() {
           {hoveredIndex !== null && (
             <div
               style={{
-                left: `${Math.max(12, Math.min(88, (hoveredIndex / (time_labels.length - 1)) * 100))}%`,
-                top: '10px',
+                left: `${Math.max(16, Math.min(84, (hoveredIndex / (time_labels.length - 1)) * 100))}%`,
+                top: '8px',
               }}
-              className="absolute -translate-x-1/2 z-30 pointer-events-none rounded-xl bg-slate-900/95 border border-white/20 p-2.5 shadow-2xl backdrop-blur-xl min-w-[175px]"
+              className="absolute -translate-x-1/2 z-30 pointer-events-none rounded-xl bg-slate-900/95 border border-white/20 p-2 sm:p-2.5 shadow-2xl backdrop-blur-xl min-w-[145px] sm:min-w-[175px]"
             >
-              <div className="text-[11px] font-mono text-slate-300 font-bold border-b border-white/10 pb-1 mb-1.5 flex items-center justify-between">
+              <div className="text-[10px] sm:text-[11px] font-mono text-slate-300 font-bold border-b border-white/10 pb-1 mb-1.5 flex items-center justify-between">
                 <span>Time: {time_labels[hoveredIndex]}</span>
-                <span className="text-teal-300 font-sans text-[10px]">Diurnal AQI</span>
+                <span className="text-teal-300 font-sans text-[9px] sm:text-[10px]">Diurnal AQI</span>
               </div>
-              <div className="space-y-1 text-xs font-semibold">
+              <div className="space-y-1 text-[11px] sm:text-xs font-semibold">
                 <div className="flex items-center justify-between text-emerald-300">
                   <span className="flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -911,24 +916,24 @@ export default function RegionalMap() {
           )}
         </div>
 
-        {/* X-Axis Timeline Labels - Exact 1-to-1 percentage aligned with SVG coordinate columns */}
+        {/* X-Axis Timeline Labels - Fixed responsive spacing to completely eliminate mobile overlapping */}
         <div className="relative w-full h-6 select-none mt-1">
           {time_labels.map((t, idx) => {
             const leftPercent = (idx / (time_labels.length - 1)) * 100;
             const isHovered = hoveredIndex === idx;
+            const isMajorMobileTick = idx % 3 === 0 || idx === time_labels.length - 1;
+
             return (
               <span
                 key={t}
                 onClick={() => setHoveredIndex(idx)}
                 style={{ left: `${leftPercent}%` }}
-                className={`absolute top-0 text-[11px] font-mono font-semibold transition-all duration-150 cursor-pointer ${
+                className={`absolute top-0 text-[9px] sm:text-[11px] font-mono font-semibold transition-all duration-150 cursor-pointer ${
                   isHovered
-                    ? 'text-teal-300 font-bold scale-110 -translate-x-1/2 drop-shadow-[0_0_8px_rgba(20,184,166,0.8)]'
-                    : idx === 0
-                    ? 'text-slate-400 translate-x-0'
-                    : idx === time_labels.length - 1
-                    ? 'text-slate-400 -translate-x-full'
-                    : 'text-slate-400 -translate-x-1/2'
+                    ? '-translate-x-1/2 text-teal-300 font-extrabold scale-110 drop-shadow-[0_0_8px_rgba(20,184,166,0.8)] z-10'
+                    : isMajorMobileTick
+                    ? '-translate-x-1/2 text-slate-400 hover:text-slate-200'
+                    : 'hidden sm:inline -translate-x-1/2 text-slate-500 hover:text-slate-300'
                 }`}
               >
                 {t}
