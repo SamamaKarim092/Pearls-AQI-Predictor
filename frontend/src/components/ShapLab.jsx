@@ -313,21 +313,21 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
       {/* Main 2-Column Bento Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         {/* ========================================================================= */}
-        {/* LEFT CARD (7 cols): Meteorological Sandbox                                */}
+        {/* METEOROLOGICAL SANDBOX (SLIDERS): order-2 on mobile, left 7 cols on desktop */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-7 rounded-2xl border border-white/10 bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden">
+        <div className="order-2 lg:order-1 lg:col-span-7 rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:p-6 backdrop-blur-xl flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden">
           {/* Ambient Glass Glow */}
           <div className="absolute -top-10 -left-10 w-72 h-72 rounded-full bg-teal-500/15 blur-3xl pointer-events-none" />
 
-          <div className="space-y-6 relative z-10">
+          <div className="space-y-5 sm:space-y-6 relative z-10">
             {/* Header with Title & Reset Button */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h2 className="text-lg font-medium text-white/90 tracking-wide flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-medium text-white/90 tracking-wide flex items-center gap-2">
                   <span>Meteorological Sandbox</span>
                   <Sparkles size={14} className="text-sky-400 opacity-80" />
                 </h2>
-                <span className="text-[11px] text-slate-400 font-mono">
+                <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono">
                   Drag sliders to simulate weather shifts
                 </span>
               </div>
@@ -518,13 +518,13 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
         </div>
 
         {/* ========================================================================= */}
-        {/* RIGHT COLUMN (5 cols): Gauge Speedometer & SHAP Waterfall Force Plot      */}
+        {/* SPEEDOMETER & SHAP FORCE PLOT: order-1 on mobile (TOP), right 5 cols on desktop */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-5 flex flex-col justify-between gap-5">
+        <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col justify-between gap-5">
           {/* ----------------------------------------------------------------------- */}
           {/* Card 1: Speedometer Gauge AQI Card                                      */}
           {/* ----------------------------------------------------------------------- */}
-          <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden min-h-[300px]">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:p-6 backdrop-blur-xl flex flex-col items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden min-h-[290px] sm:min-h-[300px]">
             {/* Dynamic Status Ambient Glow */}
             <div
               className="absolute top-1/3 left-1/2 -translate-x-1/2 w-52 h-44 rounded-full blur-3xl pointer-events-none transition-all duration-700"
@@ -538,7 +538,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
               <span className="text-slate-300 font-medium tracking-wide">Atmospheric Speedometer</span>
               
               {isSimulating ? (
-                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-[11px] font-medium text-sky-300">
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-[10px] sm:text-[11px] font-medium text-sky-300">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-sky-500" />
@@ -546,7 +546,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                   <span>Simulating SHAP...</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-medium text-emerald-300">
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] sm:text-[11px] font-medium text-emerald-300">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
@@ -557,7 +557,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
             </div>
 
             {/* SVG Speedometer Gauge Canvas */}
-            <div className="relative w-72 h-44 flex items-center justify-center pt-2">
+            <div className="relative w-full max-w-[280px] h-40 sm:h-44 flex items-center justify-center pt-2">
               <svg viewBox="0 0 220 130" className="w-full h-full overflow-visible">
                 <defs>
                   {/* High-vibrancy Green -> Yellow -> Orange -> Red Gradient matching exact image */}
@@ -612,22 +612,22 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                 </g>
               </svg>
 
-              {/* Central AQI Numerical Readout with Smooth Atmospheric Blur Texture */}
+              {/* Central AQI Numerical Readout - Perfectly centered inside the arc cavity */}
               <div
-                className={`absolute top-14 sm:top-16 flex flex-col items-center justify-center text-center transition-all duration-300 ${
+                className={`absolute top-[72px] sm:top-[76px] flex flex-col items-center justify-center text-center transition-all duration-300 ${
                   isSimulating
                     ? 'blur-[6px] opacity-60 scale-95 select-none animate-pulse'
                     : 'blur-0 opacity-100 scale-100'
                 }`}
               >
-                <span className="text-5xl font-bold tracking-tight text-white drop-shadow-md">
+                <span className="text-4xl sm:text-5xl font-bold tracking-tight text-white drop-shadow-md">
                   {simulatedAqi}
                 </span>
-                <span className="text-[12px] font-medium uppercase tracking-widest text-slate-400 mt-0.5">
+                <span className="text-[11px] sm:text-[12px] font-medium uppercase tracking-widest text-slate-400 mt-0.5">
                   AQI
                 </span>
                 <span
-                  className="text-sm font-medium mt-0.5"
+                  className="text-xs sm:text-sm font-medium mt-0.5"
                   style={{ color: category.color }}
                 >
                   {category.label}
@@ -636,7 +636,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
             </div>
 
             {/* Bottom Predicted Shift Badge */}
-            <div className="mt-4 w-full py-2 px-4 rounded-xl bg-[#09111e]/90 border border-slate-700/60 text-center text-sm font-sans shadow-inner min-h-[38px] flex items-center justify-center">
+            <div className="mt-4 w-full py-2 px-3 sm:px-4 rounded-xl bg-[#09111e]/90 border border-slate-700/60 text-center text-xs sm:text-sm font-sans shadow-inner min-h-[38px] flex items-center justify-center">
               {isSimulating ? (
                 <div className="flex items-center justify-center gap-2">
                   <Cpu size={14} className="animate-spin text-sky-400" />
@@ -644,7 +644,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
                 </div>
               ) : delta === 0 ? (
                 <span className="text-slate-300 text-xs sm:text-sm">
-                  ● Showing <span className="font-semibold text-white">Today's Live Baseline</span> ({baselineAqi} AQI). Adjust sliders to simulate!
+                  ● Showing <span className="font-semibold text-white">Today's Live Baseline</span> ({baselineAqi} AQI).
                 </span>
               ) : (
                 <div className="text-xs sm:text-sm">
@@ -665,7 +665,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
             </div>
 
             {/* User Guidance Micro-Copy */}
-            <p className="text-[11px] text-slate-400 text-center pt-2 leading-relaxed">
+            <p className="text-[10px] sm:text-[11px] text-slate-400 text-center pt-2 leading-relaxed">
               💡 <b>Experiment with Sliders</b>: Adjust wind, humidity, or temperature to simulate how today's air quality responds!
             </p>
           </div>
@@ -673,7 +673,7 @@ export default function ShapLab({ selectedCity = 'Karachi', currentLive = null }
           {/* ----------------------------------------------------------------------- */}
           {/* Card 2: Explainable AI (SHAP) Waterfall Force Plot                      */}
           {/* ----------------------------------------------------------------------- */}
-          <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-xl flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden min-h-[220px]">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:p-5 backdrop-blur-xl flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.37)] relative overflow-hidden min-h-[220px]">
             {/* Ambient Glass Glow */}
             <div className="absolute w-52 h-52 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
             <div className="flex items-center justify-between pb-3">
