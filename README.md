@@ -39,25 +39,7 @@ The project uses a **3-tier decoupled serverless architecture** where data inges
 
 ![Pearls AQI Predictor System Architecture](assets/reports/system_architecture_infographic.jpg)
 
-```mermaid
-graph LR
-    subgraph 1. Ingestion
-        A[Open-Meteo APIs] --> B[GitHub Actions Cron]
-        B --> C[Feature Engineering]
-    end
 
-    subgraph 2. Feature Store
-        C --> D[(Hopsworks Feature Store)]
-        D --> E[4-Fold Cross Validation]
-        E --> F[(Hopsworks Model Registry)]
-    end
-
-    subgraph 3. Serving & UI
-        F --> G[FastAPI Microservice :8000]
-        D -. Live Data .-> G
-        G --> H[React 19 Dashboard]
-    end
-```
 
 ---
 
